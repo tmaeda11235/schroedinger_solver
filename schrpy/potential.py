@@ -2,8 +2,8 @@ from scipy.sparse import dia_matrix
 from numpy import sign
 
 
-class potential(object):
-    """If you make this class. you should overwrite set_propaty() and val() method. """
+class potential:
+    """If you make this class. you should overwrite set_property() and val() method. """
     """val() method defines evalation of potenntial actual value. """
     """The height means strength of potential. """
 
@@ -27,16 +27,16 @@ class potential(object):
         return mat.tocsr()
 
 
-class Step_potential(potential):
+class step_potential(potential):
     """This potential is rised up the right hand side. """
     """The distance means the position of cliff. """
 
     def __init__(self, height, distance):
-        super(Step_potential, self).__init__(height)
+        super(step_potential, self).__init__(height)
         self.distance = distance
 
     def set_property(self, **args):
-        super(Step_potential, self).set_property(args)
+        super(step_potential, self).set_property(args)
         if 'distance' in args:
             self.distance = args['distance']
         return self
@@ -58,7 +58,7 @@ class box_potential(potential):
         self.barrier = barrier
 
     def set_property(self, **args):
-        super(Step_potential, self).set_property(args)
+        super(step_potential, self).set_property(args)
         if 'disanse' in args:
             self.distance = args['distance']
         if 'barrier' in args:
@@ -74,8 +74,8 @@ class box_potential(potential):
         return self
 
     def val(self, x):
-        rizeup = Step_potential(self.height, self.distance).val(x)
-        falldown = Step_potential(self.height, self.distance + self.barrier).val(x)
+        rizeup = step_potential(self.height, self.distance).val(x)
+        falldown = step_potential(self.height, self.distance + self.barrier).val(x)
         return rizeup - falldown
 
 

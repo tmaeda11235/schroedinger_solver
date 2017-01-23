@@ -8,7 +8,7 @@ class laplasian(object):
 
     def matrix(self, x):
         length = len(x)
-        det = sp.array(1 / (360 * self.delta ** 2), dtype=complex)
+        det = sp.array(1 / (360 * self.dx ** 2), dtype=complex)
         coef = sp.array([[4], [-54], [540], [-980], [540], [-54], [4]])
         std = det * coef
         data = std.repeat(length + 1, axis=1)

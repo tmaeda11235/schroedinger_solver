@@ -1,5 +1,6 @@
 import scipy as sp
-import laplasian as lap
+import schrpy.laplasian as lap
+import schrpy.potential as pot  # noqa
 
 
 class schroedinger(object):
@@ -14,7 +15,7 @@ class schroedinger(object):
         self.__x = sp.arange(xmin, xmax, dx)
         self.__x0 = x0func(self.__x)
         self.__lap_mat = lap.laplasian(self.dx).matrix(self.__x)
-        self.__pot_mat = self.potential.matrix(self.__x)
+        self.__pot_mat = potential.matrix(self.__x)
         self.hamiltonian = self.__lap_mat + self.__pot_mat
 
         self.adams = sp.integrate.ode(self.equation)
@@ -35,4 +36,4 @@ class schroedinger(object):
             solx[index] = self.adams.integrate(self.adams.t + self.dt)
             solt[index] = self.adams.t
             index += 1
-        return (solx, solt)
+        return (solt, solx)
