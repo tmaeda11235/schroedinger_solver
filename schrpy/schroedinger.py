@@ -1,39 +1,38 @@
-import scipy as sp
-import schrpy.laplasian as lap
-import schrpy.potential as pot  # noqa
+from scipy import arange, array, zeros
+from scipy.integrate import ode
+from schrpy.laplasian import laplasian
 
 
 class schroedinger(object):
 
-    def __init__(self, potential, x0func, xmin, xmax, dx, dt, tmax):
+    def __init__(self, potential, x0func, xmin=-60, xmax=60, dx=0.02, tmax=20, dt=0.02):
         self.potential = potential
         self.xmin = xmin
         self.xmax = xmax
         self.dx = dx
         self.dt = dt
         self.tmax = tmax
-        self.__x = sp.arange(xmin, xmax, dx)
-        self.__x0 = x0func(self.__x)
-        self.__lap_mat = lap.laplasian(self.dx).matrix(self.__x)
+        self.__x = arange(xmin, xmax, dx)
+        self.__x0 = array(x0func(self.__x), dtype=complex)
+        self.__lap_mat = laplasian(self.dx).matrix(self.__x)
         self.__pot_mat = potential.matrix(self.__x)
-        self.hamiltonian = self.__lap_mat + self.__pot_mat
+        self.hamiltonian = self.__lap_mat.__add__(self.__pot_mat)
+        self.__op = 0.5j * self.hamiltonian
 
-        self.adams = sp.integrate.ode(self.equation)
-        self.adams.set_integrator('zvode', method='bdf', nsteps=10000)
-        self.adams.set_initial_value(self.__x0)
+        self.ode = ode(self.equation)
+        self.ode.set_integrator('zvode', method='bdf', nsteps=10000)
+        self.ode.set_initial_value(self.__x0)
 
-    def equation(self, phi0):
-        phi = sp.array(0.5j * self.hamiltonian.dot(phi0))
+    def equation(self, t, phi0):
+        phi = self.__op.dot(phi0)
         return phi
 
     def solve(self):
         index = 0
         tlen = int(self.tmax / self.dt) + 1
         xlen = len(self.__x0)
-        solx = sp.zeros([tlen, xlen])
-        solt = sp.zeros([tlen])
-        while self.adams.successful() and self.adams.t < self.tmax:
-            solx[index] = self.adams.integrate(self.adams.t + self.dt)
-            solt[index] = self.adams.t
+        sol = zeros([tlen, xlen], dtype=complex)
+        while self.ode.successful() and self.ode.t < self.tmax:
+            sol[index] = self.ode.integrate(self.ode.t + self.dt)
             index += 1
-        return (solt, solx)
+        return sol

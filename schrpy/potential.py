@@ -1,5 +1,6 @@
 from scipy.sparse import dia_matrix
-from numpy import sign
+from scipy.signal import sawtooth
+from scipy import pi, sign
 
 
 class potential:
@@ -23,7 +24,7 @@ class potential:
         data = self.val(x)
         offset = [0]
         n = len(x)
-        mat = dia_matrix((data, offset), shape=(n, n))
+        mat = dia_matrix((data, offset), shape=(n, n), dtype=complex)
         return mat.tocsr()
 
 
@@ -46,7 +47,7 @@ class step_potential(potential):
         return self
 
     def val(self, x):
-        potential = (sign(x - self.distance) + 1) / 2
+        potential = self.height * (sign(x - self.distance) + 1) / 2
         return potential
 
 
@@ -97,19 +98,7 @@ class KP_potential(potential):
         return self
 
     def val(self, x):
-        sow = map(__sow_wave(self._span).val, x)
-        return box_potential(sow, self.well, self.barrier)
-
-
-class __sow_wave(object):
-
-    def __init__(self, span):
-        self.span = span
-
-    def val(self, x):
-        if self.span < x:
-            return self.val(x - self.span)
-        elif x < 0:
-            return self.val(x + self.span)
-        else:
-            return x
+        nom = 2 * pi * x / self.__span
+        saw = self.__span * (sawtooth(nom) + 1) / 2
+        bp = box_potential(self.height, self.well, self.barrier)
+        return bp.val(saw)
