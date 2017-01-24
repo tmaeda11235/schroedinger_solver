@@ -3,9 +3,27 @@ from scipy.signal import sawtooth
 from scipy import pi, sign
 
 
-class potential:
-    """If you make this class. you should overwrite set_property() and val() method. """
-    """val() method defines evalation of potenntial actual value. """
+class __potential:
+    """If you make this class. you should overwrite func() method. """
+    """func() method defines evalation of potenntial actual value. """
+
+    def matrix(self, x):
+        data = self.func(x)
+        offset = [0]
+        n = len(x)
+        mat = dia_matrix((data, offset), shape=(n, n), dtype=complex)
+        return mat.tocsr()
+
+
+class potential(__potential):
+    """Putting function, you can make orignal potential. """
+
+    def __init__(self, func):
+        self.func = func
+
+
+class __corepotential(__potential):
+    """If you make this class. you should overwrite set_property()"""
     """The height means strength of potential. """
 
     def __init__(self, height):
@@ -20,15 +38,8 @@ class potential:
         self.height = height
         return self
 
-    def matrix(self, x):
-        data = self.val(x)
-        offset = [0]
-        n = len(x)
-        mat = dia_matrix((data, offset), shape=(n, n), dtype=complex)
-        return mat.tocsr()
 
-
-class step_potential(potential):
+class step_potential(__corepotential):
     """This potential is rised up the right hand side. """
     """The distance means the position of cliff. """
 
@@ -46,12 +57,12 @@ class step_potential(potential):
         self.distance = distance
         return self
 
-    def val(self, x):
+    def func(self, x):
         potential = self.height * (sign(x - self.distance) + 1) / 2
         return potential
 
 
-class box_potential(potential):
+class box_potential(__corepotential):
 
     def __init__(self, height, distance, barrier):
         super(box_potential, self).__init__(height)
@@ -74,13 +85,13 @@ class box_potential(potential):
         self.barrier = barrier
         return self
 
-    def val(self, x):
-        rizeup = step_potential(self.height, self.distance).val(x)
-        falldown = step_potential(self.height, self.distance + self.barrier).val(x)
+    def func(self, x):
+        rizeup = step_potential(self.height, self.distance).func(x)
+        falldown = step_potential(self.height, self.distance + self.barrier).func(x)
         return rizeup - falldown
 
 
-class KP_potential(potential):
+class KP_potential(__corepotential):
 
     def __init__(self, height, well, barrier):
         super(KP_potential, self).__init__(height)
@@ -97,8 +108,8 @@ class KP_potential(potential):
         self.__span = self.well + self.barrier
         return self
 
-    def val(self, x):
+    def func(self, x):
         nom = 2 * pi * x / self.__span
         saw = self.__span * (sawtooth(nom) + 1) / 2
         bp = box_potential(self.height, self.well, self.barrier)
-        return bp.val(saw)
+        return bp.func(saw)
