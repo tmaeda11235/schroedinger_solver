@@ -20,7 +20,7 @@ class schroedinger(object):
         self.__op = 0.5j * self.hamiltonian
 
         self.ode = ode(self.equation)
-        self.ode.set_integrator('zvode', method='bdf', nsteps=10000)
+        self.ode.set_integrator('zvode', method='adams', nsteps=100000)
         self.ode.set_initial_value(self.__x0)
 
     def equation(self, t, phi0):
@@ -32,7 +32,10 @@ class schroedinger(object):
         tlen = int(self.tmax / self.dt) + 1
         xlen = len(self.__x0)
         sol = zeros([tlen, xlen], dtype=complex)
+        print("now solving")
         while self.ode.successful() and self.ode.t < self.tmax:
             sol[index] = self.ode.integrate(self.ode.t + self.dt)
             index += 1
+            fin = int(index * 100 / tlen)
+            print('{0}% done! '.format(fin), '\r', end='', flush=True)
         return sol

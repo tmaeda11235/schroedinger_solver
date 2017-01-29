@@ -113,3 +113,11 @@ class KP_potential(__corepotential):
         saw = self.__span * (sawtooth(nom) + 1) / 2
         bp = box_potential(self.height, self.well, self.barrier)
         return bp.func(saw)
+
+
+class us_KP_potential(KP_potential):
+
+    def func(self, x):
+        flp = super(us_KP_potential, self).func(-x)
+        rtn = step_potential(1, 0).func(x) * flp
+        return rtn

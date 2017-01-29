@@ -11,5 +11,5 @@ class gaussian:
 
     def func(self, x):
         pdf = array(norm.pdf(x, self.mean, self.sd), dtype=complex)
-        wav = exp(-1j * self.wavenumber * x)
+        wav = exp(1j * self.wavenumber * x)
         return pdf * wav
