@@ -4,8 +4,8 @@ from scipy import pi, sign
 
 
 class __potential:
-    """If you make this class. you should overwrite func() method. """
-    """func() method defines evalation of potenntial actual value. """
+    """If you make this class. you should overwrite func() method. func() method defines evalation of potenntial
+    actual value. """
 
     def matrix(self, x):
         data = self.func(x)

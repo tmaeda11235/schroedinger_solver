@@ -1,7 +1,7 @@
 from time import time  # noqa
 import scipy as sp  # noqa
 import schrpy as sch  # noqr
-for a in [round(l * 0.01, 4) for l in range(0, 100, 5)]:
+for a in [round(l * 0.01, 4) for l in range(0, 101, 5)]:
     b = 5.0
     k = 1.0
     testpot = sch.us_KP_potential(8., a, b)
@@ -10,5 +10,5 @@ for a in [round(l * 0.01, 4) for l in range(0, 100, 5)]:
     t = time()
     Z = solver.solve()
     print('spent', time() - t, 'seconds.')
-    sp.save('uskp_a:{}_b:{}_k:{}.npy'.format(a, b, k), Z)
-    print('Saved as uskp_a:{}_b:{}_k:{}.npy'.format(a, b, k))
+    sp.save('uskp_a[{}]b[{}]k[{}].npy'.format(a, b, k), Z)
+    print('Saved as uskp_a:{}_b:{}_k:{}.npy\n\n'.format(a, b, k))
