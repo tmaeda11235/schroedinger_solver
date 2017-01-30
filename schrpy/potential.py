@@ -16,15 +16,14 @@ class __potential:
 
 
 class potential(__potential):
-    """Putting function, you can make orignal potential. """
+    """Putting function, you can make original potential. """
 
     def __init__(self, func):
         self.func = func
 
 
 class __corepotential(__potential):
-    """If you make this class. you should overwrite set_property()"""
-    """The height means strength of potential. """
+    """If you make this class. you should overwrite set_property(). The height means strength of potential. """
 
     def __init__(self, height):
         self.height = height
@@ -40,8 +39,7 @@ class __corepotential(__potential):
 
 
 class step_potential(__corepotential):
-    """This potential is rised up the right hand side. """
-    """The distance means the position of cliff. """
+    """This potential is rised up the right hand side. The distance means the position of cliff. """
 
     def __init__(self, height, distance):
         super(step_potential, self).__init__(height)

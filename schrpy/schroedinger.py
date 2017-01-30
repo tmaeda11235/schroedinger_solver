@@ -34,8 +34,10 @@ class schroedinger(object):
         sol = zeros([tlen, xlen], dtype=complex)
         print("now solving")
         while self.ode.successful() and self.ode.t < self.tmax:
+            fin = int(index * 100 / tlen)
+            print('{}% doing! '.format(fin), '\r', end='', flush=True)
             sol[index] = self.ode.integrate(self.ode.t + self.dt)
             index += 1
-            fin = int(index * 100 / tlen)
-            print('{0}% done! '.format(fin), '\r', end='', flush=True)
+        else:
+            print('{}% done! '.format(fin),  end='', flush=True)
         return sol
