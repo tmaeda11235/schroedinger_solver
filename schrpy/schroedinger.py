@@ -39,5 +39,6 @@ class schroedinger(object):
             sol[index] = self.ode.integrate(self.ode.t + self.dt)
             index += 1
         else:
-            print('{}% done!\n '.format(fin))
+            fin = round(index * 100 / tlen, 2)
+            print('\n{}% done! '.format(fin))
         return sol
