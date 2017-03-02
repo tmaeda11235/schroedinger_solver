@@ -7,6 +7,9 @@ z = sc.load('eigenvec.npy')
 print(z[:, -1].shape)
 print(x.shape)
 fig = plt.figure()
-for k in range(0, 50):
-    plt.plot(x, sc.absolute(z[:, k]))
-    plt.show()
+param = 950
+for k in range(param, param + 20):
+    fig.add_subplot(10, 2, k - param +1)
+    pp = plt.plot(x, sc.absolute(z[:, k]))
+    plt.axis([-1., 0., -0.008, 0.008])
+plt.show(fig)

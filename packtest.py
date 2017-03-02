@@ -1,7 +1,7 @@
 from time import time  # noqa
 import scipy as sp  # noqa
 import schrpy as sch  # noqr
-for a in [round(l * 0.01, 4) for l in range(100, 201, 5)]:
+for a in [round(l * 0.01, 4) for l in range(150, 251, 5)]:
     b = 5.0
     k = 1.0
     testpot = sch.us_KP_potential(8., a, b)

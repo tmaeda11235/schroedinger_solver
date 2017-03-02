@@ -18,4 +18,9 @@ class nelson:
     def run(self, dt):
         rand = sqrt(0.5) * random.normal(scale=dt, size=self.n)
         self.x += self.drift(self.x, self.t) * dt + rand
+        self.t += dt
         return self.x
+
+    def setT(self, newT):
+        self.t = newT
+        return self
