@@ -3,12 +3,12 @@ from scipy.interpolate import RectBivariateSpline
 
 
 class nelson:
-    def __init__(self, x, t, psi, xinit):
+    def __init__(self, x, t, psi, x_init):
         imz, rez = imag(log(psi)), real(log(psi))
         self.realSpline, self.imagSpline = RectBivariateSpline(t, x, rez), RectBivariateSpline(t, x, imz)
         self.t = 0
-        self.x = xinit
-        self.n = len(xinit)
+        self.x = x_init
+        self.n = len(x_init)
 
     def drift(self, x, t):
         re = self.realSpline.ev(t, x, dx=1)

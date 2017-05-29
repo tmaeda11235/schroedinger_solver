@@ -16,11 +16,11 @@ class schroedinger(object):
         self.__x0 = array(x0func(self.__x), dtype=complex)
         self.__lap_mat = laplasian(self.dx).matrix(self.__x)
         self.__pot_mat = potential.matrix(self.__x)
-        self.hamiltonian = self.__lap_mat.__add__(self.__pot_mat)
-        self.__op = 0.5j * self.hamiltonian
+        self.hamiltonian = -0.5 * self.__lap_mat + self.__pot_mat
+        self.__op = -1j * self.hamiltonian
 
         self.ode = ode(self.equation)
-        self.ode.set_integrator('zvode', method='adams', nsteps=100000)
+        self.ode.set_integrator('zvode', method='adams', nsteps=1000000)
         self.ode.set_initial_value(self.__x0)
 
     def equation(self, t, phi0):
@@ -32,10 +32,10 @@ class schroedinger(object):
         tlen = int(self.tmax / self.dt) + 1
         xlen = len(self.__x0)
         sol = zeros([tlen, xlen], dtype=complex)
-        print("now solving")
+        print("now solving\n")
         while self.ode.successful() and self.ode.t < self.tmax:
             fin = round(index * 100 / tlen, 2)
-            print('\r{}% doing! '.format(fin), end='  ')
+            print('\r {}% doing! '.format(fin), end=' ', flush=True)
             sol[index] = self.ode.integrate(self.ode.t + self.dt)
             index += 1
         else:

@@ -4,7 +4,7 @@ from scipy import pi, sign
 
 
 class __potential:
-    """If you make this class. you should overwrite func() method. func() method defines evalation of potenntial
+    """If you make this class. you should overwrite func() method. func() method defines evaluation of potential
     actual value. """
 
     def matrix(self, x):
@@ -30,7 +30,7 @@ class __corepotential(__potential):
 
     def set_property(self, **args):
         if 'height' in args:
-            self.distance = args['height']
+            self.height = args['height']
         return self
 
     def set_height(self, height):
@@ -56,8 +56,8 @@ class step_potential(__corepotential):
         return self
 
     def func(self, x):
-        potential = self.height * (sign(x - self.distance) + 1) / 2
-        return potential
+        val = self.height * (x > self.distance)
+        return val
 
 
 class box_potential(__corepotential):
