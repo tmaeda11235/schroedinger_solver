@@ -4,7 +4,7 @@ import schrpy as sch
 
 x = sc.arange(-60, 61, 0.01)
 z = sc.load('eigvec.npy')
-xo = sch.gaussian(-15, 3, 2).func(x)
+xo = sch.gaussian(3, 1, 2).func(x)
 coeff = sc.matmul(xo.conj(), z)
 print(coeff.shape)
 print(x.shape)
