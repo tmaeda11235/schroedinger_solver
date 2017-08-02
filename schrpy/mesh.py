@@ -24,7 +24,7 @@ class Mesh:
         return "{}\n{}".format(x_string, t_string)
 
 
-class MyMesh(mesh):
+class MyMesh(Mesh):
 
     def __init__(self, xmin=-60, xmax=60, dx=0.02, t0=0, tmax=20, dt=0.02):
         super(MyMesh, self).__init__(xmin, xmax, dx, t0, tmax, dt)
