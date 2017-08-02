@@ -1,7 +1,7 @@
 from scipy.sparse import dia_matrix
 from scipy.signal import sawtooth
 from scipy import pi
-from schrpy import mesh
+from unittest import mock
 
 
 class __potential:
@@ -103,10 +103,7 @@ class box_potential(_corepotential):
         return self
 
     def func(self, x):
-        xmin = self._x_vector[0]
-        xmax = self._x_vector[-1]
-        dx = (xmax-xmin)/self._x_num
-        dummy = mesh.mesh(xmin, xmax, dx, 0, 1, 1)
+        dummy = mock.Mock(x_vector=self._x_vector, x_num=self._x_num)
         raised = step_potential(dummy, self.height, self.distance).func(x)
         fallen = step_potential(dummy, self.height, self.distance + self.barrier).func(x)
         return raised - fallen
@@ -132,12 +129,8 @@ class KP_potential(_corepotential):
     # noinspection PyTypeChecker
     def func(self, x):
         nom = 2 * pi * x / self._span
-        # noinspection PyTypeChecker
         saw = self._span * (sawtooth(nom) + 1) / 2
-        xmin = self._x_vector[0]
-        xmax = self._x_vector[-1]
-        dx = (xmax-xmin)/self._x_num
-        dummy = mesh.mesh(xmin, xmax, dx, 0, 1, 1)
+        dummy = mock.Mock(x_vector=self._x_vector, x_num=self._x_num)
         bp = box_potential(dummy, self.height, self.well, self.barrier)
         return bp.func(saw)
 
@@ -145,10 +138,7 @@ class KP_potential(_corepotential):
 class us_KP_potential(KP_potential):
 
     def func(self, x):
-        xmin = self._x_vector[0]
-        xmax = self._x_vector[-1]
-        dx = (xmax-xmin)/self._x_num
-        dummy = mesh.mesh(xmin, xmax, dx, 0, 1, 1)
+        dummy = mock.Mock(x_vector=self._x_vector, x_num=self._x_num)
         flp = super(us_KP_potential, self).func(-x)
         rtn = step_potential(dummy, 1, 0).func(x) * flp
         return rtn
