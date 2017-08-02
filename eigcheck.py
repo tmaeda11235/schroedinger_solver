@@ -11,11 +11,10 @@ x1 = sp.arange(-5, 5, dx)
 x2 = sp.arange(-5, 5, dx) + 10
 wave_number = [2 * sp.pi * (n + 0.5) / L for n in range(N)]
 amplitude = sp.random.rand(N)
-amplitude[0] = amplitude[1:].sum()
 
 
 def base(i, x):
-    return sp.cos(wave_number[i] * x)
+    return sp.cos(wave_number[i] * x)*(sp.absolute(x) < 0.499*L)
 
 
 def xo(x):

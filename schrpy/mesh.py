@@ -3,7 +3,7 @@ from scipy import arange, meshgrid
 
 class mesh:
 
-    def __init__(self, xmin=-60, xmax=60, dx=0.02, t0=0, tmax=20, dt=0.02):
+    def __init__(self, xmin, xmax, dx, t0, tmax, dt):
         self.xmin = xmin
         self.xmax = xmax
         self.dx = dx
@@ -19,6 +19,12 @@ class mesh:
         self.dense = (self.dx ** -1, self.dt ** -1)
 
     def __str__(self):
-        xstr = "{}<x<{}  (dx={})".format(self.xmin, self.xmax, self.dt)
-        tstr = "{}<t<{}  (dt={})".format(self.t0, self.tmax, self.dx)
-        return "{}  &  {}".format(xstr, tstr)
+        x_string = "{}<x<{}  (dx={})".format(self.xmin, self.xmax, self.dt)
+        t_string = "{}<t<{}  (dt={})".format(self.t0, self.tmax, self.dx)
+        return "{}\n{}".format(x_string, t_string)
+
+
+class MyMesh(mesh):
+
+    def __init__(self, xmin=-60, xmax=60, dx=0.02, t0=0, tmax=20, dt=0.02):
+        super(MyMesh, self).__init__(xmin, xmax, dx, t0, tmax, dt)
