@@ -1,7 +1,7 @@
 from scipy import arange, meshgrid
 
 
-class mesh:
+class Mesh:
 
     def __init__(self, xmin, xmax, dx, t0, tmax, dt):
         self.xmin = xmin
