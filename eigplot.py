@@ -4,8 +4,8 @@ import matplotlib.lines as line
 
 
 x = sc.arange(-60, 61, 0.01)
-z = sc.load('eigvec.npy')
-v = sc.load('eigval.npy')
+z = sc.load('eigenvec.npy')
+v = sc.load('eigenval.npy')
 print(z[:, -1].shape)
 print(x.shape)
 plt.plot(sc.absolute(v), 'o')
@@ -18,5 +18,5 @@ for param in range(0, 150, 5):
         pp = plt.plot(x, sc.absolute(z[:, k]))
         plt.xlim(-60, 60)
         #plt.ylim(0, 0.03)
-    plt.savefig("eig{0:03d}.png".format(param))
+    plt.savefig("what{0:03d}.png".format(param))
     plt.clf()

@@ -15,7 +15,7 @@ class mesh:
         self.t_vector = arange(self.t0, self.tmax, self.dt)
         self.x_num = len(self.x_vector)
         self.t_num = len(self.t_vector)
-        self.x_matrix, self.t_matrix = meshgrid(self.x, self.t)
+        self.x_matrix, self.t_matrix = meshgrid(self.x_vector, self.t_vector)
         self.dense = (self.dx ** -1, self.dt ** -1)
 
     def __str__(self):

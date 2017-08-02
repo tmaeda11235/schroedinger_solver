@@ -1,29 +1,58 @@
-from time import time  # noqa
-import scipy as sp  # noqa
-import schrpy as sch  # noqr
+import schrpy as sc
+import scipy as sp
 import matplotlib.pyplot as plt
-import os.path as pth
-import itertools as itools
-x, y = sp.meshgrid(sp.arange(-60, 60, 0.05), sp.arange(0, 30, 0.05))
-V = [round(l * 0.1, 4) for l in range(60, 70, 5)]
-A = [round(l * 0.1, 4) for l in range(2, 20, 2)]
-B = [round(l * 0.1, 4) for l in range(1, 10, 1)]
-K = [2.0]
-itr = itools.product(V, A, B, K)
-for (v, a, b, k) in itr:
-    if not pth.isfile('data/uskp_v[{}]a[{}]b[{}]k[{}].npy'.format(v, a, b, k),):
-        testpot = sch.us_KP_potential(v, a, b)
-        xo = sch.gaussian(-15, 3., k).func
-        solver = sch.schroedinger(testpot, xo, dx=0.05, dt=0.05, tmax=30)
-        t = time()
-        Z = solver.solve()
-        print('spent', time() - t, 'seconds.')
-        sp.save('data/uskp_v[{}]a[{}]b[{}]k[{}].npy'.format(v, a, b, k), Z)
-        print('Saved as uskp_v[{}]a[{}]b[{}]k[{}].npy'.format(v, a, b, k))
-        plt.pcolor(x[::5, ::5], y[::5, ::5], sp.absolute(Z[1::5, ::5]) ** 2)
-        plt.colorbar()
-        plt.savefig('pic/uskp_v[{}]a[{}]b[{}]k[{}].png'.format(v, a, b, k))
-        plt.clf()
-        print('Saved as uskp_v[{}]a[{}]b[{}]k[{}].png\n\n'.format(v, a, b, k))
+
+L = 10
+N = 15
+t = 0
+dt = 0.001
+dx = 0.01
+x1 = sp.arange(-5, 5, dx)
+x2 = sp.arange(-5, 5, dx) + 10
+wave_number = [2 * sp.pi * (n + 0.5) / L for n in range(N)]
+amplitude = sp.random.rand(N)
+amplitude[0] = amplitude[1:].sum()
+
+
+def base(i, x):
+    return sp.cos(wave_number[i] * x)
+
+
+def xo(x):
+    func = 0
+    for i in range(N):
+        func = func + amplitude[i] * base(i, x)
+    return func
+
+potential = sc.potential(lambda x: 4 * x ** 2)
+solver = sc.schroedinger(potential, xo, xmax=5, xmin=-5, dx=dx).ode
+
+
+def dynamic(before, after):
+    dd = sp.absolute(after) ** 2 - sp.absolute(before) ** 2
+    if dd.sum() ==0:
+        print("{}\n".format(t))
+        return False
     else:
-        print('It has been saved  as uskp_v[{}]a[{}]b[{}]k[{}].png\n\n'.format(v, a, b, k))
+        print("{}\n".format(t))
+        return True
+
+
+def draw(time):
+    decant = 10 * time
+    det = decant == int(decant)
+    return det
+a = 0
+while dynamic(x1, x2):
+    t += dt
+    a += 1
+    x1, x2 = (x2, solver.integrate(t))
+    if a == 1:
+        plt.plot(sp.absolute(x2)**2)
+        plt.savefig('pic/harmonicTest{}.png'.format(t))
+        plt.clf()
+        a = 0
+
+plt.plot(sp.absolute(x2)**2)
+plt.savefig('pic/HarmonicTest1_{}.png'.format(t))
+plt.clf()
