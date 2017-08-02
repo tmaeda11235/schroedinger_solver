@@ -3,9 +3,10 @@ from scipy.interpolate import RectBivariateSpline
 
 
 class nelson:
-    def __init__(self, x, t, psi, x_init):
+    def __init__(self, mesh, psi, x_init):
         imz, rez = imag(log(psi)), real(log(psi))
-        self.realSpline, self.imagSpline = RectBivariateSpline(t, x, rez), RectBivariateSpline(t, x, imz)
+        self.realSpline = RectBivariateSpline(mesh.t_vector, mesh.x_vector, rez)
+        self.imagSpline = RectBivariateSpline(mesh.t_vector, mesh.x_vector, imz)
         self.t = 0
         self.x = x_init
         self.n = len(x_init)
@@ -21,6 +22,6 @@ class nelson:
         self.t += dt
         return self.x
 
-    def setT(self, newT):
-        self.t = newT
+    def set_t(self, new_t):
+        self.t = new_t
         return self

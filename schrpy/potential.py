@@ -1,32 +1,46 @@
 from scipy.sparse import dia_matrix
 from scipy.signal import sawtooth
-from scipy import pi, sign
+from scipy import pi
 
 
 class __potential:
     """If you make this class. you should overwrite func() method. func() method defines evaluation of potential
     actual value. """
 
-    def matrix(self, x):
-        data = self.func(x)
+    def __init__(self, mesh):
+        self._mesh = mesh
+
+    def vector(self):
+        pass
+
+    def matrix(self):
         offset = [0]
-        n = len(x)
-        mat = dia_matrix((data, offset), shape=(n, n), dtype=complex)
+        n = self._mesh.x_num
+        mat = dia_matrix((self.vector(), offset), shape=(n, n), dtype=complex)
         return mat.tocsr()
 
 
 class potential(__potential):
     """Putting function, you can make original potential. """
 
-    def __init__(self, func):
-        self.func = func
+    def __init__(self, mesh, func):
+        super(potential, self).__init__(mesh)
+        if callable(func):
+            self._func = func
+
+    def vector(self):
+        return self._func(self._mesh.x_vector)
 
 
-class __corepotential(__potential):
-    """If you make this class. you should overwrite set_property(). The height means strength of potential. """
+class _corepotential(__potential):
+    """If you make this class. you should overwrite set_property(). The height represents strength of potential. """
 
-    def __init__(self, height):
+    def __init__(self, mesh, height):
+        super(_corepotential, self).__init__(mesh)
         self.height = height
+
+    def vector(self):
+        return self.func(self._mesh.x_vector)
 
     def set_property(self, **args):
         if 'height' in args:
@@ -37,16 +51,19 @@ class __corepotential(__potential):
         self.height = height
         return self
 
+    def func(self, x):
+        pass
 
-class step_potential(__corepotential):
-    """This potential is rised up the right hand side. The distance means the position of cliff. """
 
-    def __init__(self, height, distance):
-        super(step_potential, self).__init__(height)
+class step_potential(_corepotential):
+    """This potential is raised up the right hand side. The distance represents the position of cliff. """
+
+    def __init__(self, mesh, height, distance):
+        super(step_potential, self).__init__(mesh, height)
         self.distance = distance
 
     def set_property(self, **args):
-        super(step_potential, self).set_property(args)
+        super(step_potential, self).set_property(**args)
         if 'distance' in args:
             self.distance = args['distance']
         return self
@@ -60,15 +77,15 @@ class step_potential(__corepotential):
         return val
 
 
-class box_potential(__corepotential):
+class box_potential(_corepotential):
 
-    def __init__(self, height, distance, barrier):
-        super(box_potential, self).__init__(height)
+    def __init__(self, mesh, height, distance, barrier):
+        super(box_potential, self).__init__(mesh, height)
         self.distance = distance
         self.barrier = barrier
 
     def set_property(self, **args):
-        super(step_potential, self).set_property(args)
+        super(box_potential, self).set_property(**args)
         if 'disanse' in args:
             self.distance = args['distance']
         if 'barrier' in args:
@@ -84,31 +101,33 @@ class box_potential(__corepotential):
         return self
 
     def func(self, x):
-        rizeup = step_potential(self.height, self.distance).func(x)
-        falldown = step_potential(self.height, self.distance + self.barrier).func(x)
-        return rizeup - falldown
+        raised = step_potential(self.height, self.distance).func(x)
+        fallen = step_potential(self.height, self.distance + self.barrier).func(x)
+        return raised - fallen
 
 
-class KP_potential(__corepotential):
+class KP_potential(_corepotential):
 
-    def __init__(self, height, well, barrier):
-        super(KP_potential, self).__init__(height)
+    def __init__(self, mesh, height, well, barrier):
+        super(KP_potential, self).__init__(mesh, height)
         self.well = well
         self.barrier = barrier
-        self.__span = well + barrier
+        self._span = well + barrier
 
     def set_property(self, **args):
-        super(KP_potential, self).set_property(args)
+        super(KP_potential, self).set_property(**args)
         if 'well' in args:
             self.well = args['well']
         if 'barrier' in args:
             self.barrier = args['barrier']
-        self.__span = self.well + self.barrier
+        self._span = self.well + self.barrier
         return self
 
+    # noinspection PyTypeChecker
     def func(self, x):
-        nom = 2 * pi * x / self.__span
-        saw = self.__span * (sawtooth(nom) + 1) / 2
+        nom = 2 * pi * x / self._span
+        # noinspection PyTypeChecker
+        saw = self._span * (sawtooth(nom) + 1) / 2
         bp = box_potential(self.height, self.well, self.barrier)
         return bp.func(saw)
 
