@@ -1,16 +1,20 @@
 from scipy.sparse import dia_matrix
 from scipy.signal import sawtooth
-from scipy import pi
+from scipy.interpolate import interp1d
+from scipy import pi, isrealobj, linspace
 from unittest import mock
 
 
-class __potential:
+class __Potential:
     """If you make this class. you should overwrite func() method. func() method defines evaluation of potential
     actual value. """
 
-    def __init__(self, mesh_):
-        self._x_vector = mesh_.x_vector
-        self._x_num = mesh_.x_num
+    def __init__(self, mesh):
+        self._x_vector = mesh.x_vector
+        self._x_num = mesh.x_num
+        self._x_min = mesh.x_min
+        self._x_max = mesh.x_max
+        self._mesh_param = mesh.param
 
     def vector(self):
         pass
@@ -22,23 +26,30 @@ class __potential:
         return mat.tocsr()
 
 
-class potential(__potential):
+class Potential(__Potential):
     """Putting function, you can make original potential. """
 
-    def __init__(self, mesh_, func):
-        super(potential, self).__init__(mesh_)
-        if callable(func):
-            self._func = func
+    def __init__(self, mesh, arg):
+        super(Potential, self).__init__(mesh)
+        if isrealobj(arg) and arg.len() == self._x_num:
+            self._vec = arg
+        elif isrealobj(arg):
+            tics = linspace(self._x_min, self._x_max, num=self._vec.len())
+            self._func = interp1d(tics, self._vec)
+            self._vec = self._func(self._x_vector)
+        elif callable(arg):
+            self._func = arg
+            self._vec = self._func(self._x_vector)
 
     def vector(self):
-        return self._func(self._x_vector)
+            return self._vec
 
 
-class _corepotential(__potential):
+class _CorePotential(__Potential):
     """If you make this class. you should overwrite set_property(). The height represents strength of potential. """
 
-    def __init__(self, mesh_, height):
-        super(_corepotential, self).__init__(mesh_)
+    def __init__(self, mesh, height):
+        super(_CorePotential, self).__init__(mesh)
         self.height = height
 
     def vector(self):
@@ -57,15 +68,15 @@ class _corepotential(__potential):
         pass
 
 
-class step_potential(_corepotential):
+class StepPotential(_CorePotential):
     """This potential is raised up the right hand side. The distance represents the position of cliff. """
 
-    def __init__(self, mesh_, height, distance):
-        super(step_potential, self).__init__(mesh_, height)
+    def __init__(self, mesh, height, distance):
+        super(StepPotential, self).__init__(mesh, height)
         self.distance = distance
 
     def set_property(self, **args):
-        super(step_potential, self).set_property(**args)
+        super(StepPotential, self).set_property(**args)
         if 'distance' in args:
             self.distance = args['distance']
         return self
@@ -79,15 +90,15 @@ class step_potential(_corepotential):
         return val
 
 
-class box_potential(_corepotential):
+class BoxPotential(_CorePotential):
 
-    def __init__(self, mesh_, height, distance, barrier):
-        super(box_potential, self).__init__(mesh_, height)
+    def __init__(self, mesh, height, distance, barrier):
+        super(BoxPotential, self).__init__(mesh, height)
         self.distance = distance
         self.barrier = barrier
 
     def set_property(self, **args):
-        super(box_potential, self).set_property(**args)
+        super(BoxPotential, self).set_property(**args)
         if 'disanse' in args:
             self.distance = args['distance']
         if 'barrier' in args:
@@ -104,21 +115,21 @@ class box_potential(_corepotential):
 
     def func(self, x):
         dummy = mock.Mock(x_vector=self._x_vector, x_num=self._x_num)
-        raised = step_potential(dummy, self.height, self.distance).func(x)
-        fallen = step_potential(dummy, self.height, self.distance + self.barrier).func(x)
+        raised = StepPotential(dummy, self.height, self.distance).func(x)
+        fallen = StepPotential(dummy, self.height, self.distance + self.barrier).func(x)
         return raised - fallen
 
 
-class KP_potential(_corepotential):
+class KPPotential(_CorePotential):
 
-    def __init__(self, mesh_, height, well, barrier):
-        super(KP_potential, self).__init__(mesh_, height)
+    def __init__(self, mesh, height, well, barrier):
+        super(KPPotential, self).__init__(mesh, height)
         self.well = well
         self.barrier = barrier
         self._span = well + barrier
 
     def set_property(self, **args):
-        super(KP_potential, self).set_property(**args)
+        super(KPPotential, self).set_property(**args)
         if 'well' in args:
             self.well = args['well']
         if 'barrier' in args:
@@ -131,14 +142,14 @@ class KP_potential(_corepotential):
         nom = 2 * pi * x / self._span
         saw = self._span * (sawtooth(nom) + 1) / 2
         dummy = mock.Mock(x_vector=self._x_vector, x_num=self._x_num)
-        bp = box_potential(dummy, self.height, self.well, self.barrier)
+        bp = BoxPotential(dummy, self.height, self.well, self.barrier)
         return bp.func(saw)
 
 
-class us_KP_potential(KP_potential):
+class UsKPPotential(KPPotential):
 
     def func(self, x):
         dummy = mock.Mock(x_vector=self._x_vector, x_num=self._x_num)
-        flp = super(us_KP_potential, self).func(-x)
-        rtn = step_potential(dummy, 1, 0).func(x) * flp
+        flp = super(UsKPPotential, self).func(-x)
+        rtn = StepPotential(dummy, 1, 0).func(x) * flp
         return rtn
