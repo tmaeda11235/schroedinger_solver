@@ -1,6 +1,6 @@
 from scipy import zeros
 from scipy.integrate import ode
-from schrpy import laplasian
+from schrpy import Laplasian
 
 
 class Schroedinger:
@@ -9,9 +9,9 @@ class Schroedinger:
         self._x_num = mesh.x_num
         self._t_num = mesh.t_num
         self._dt = mesh.dt
-        self._tmax = mesh.tmax
+        self._tmax = mesh.t_max
 
-        self._laplasian = laplasian(mesh).matrix()
+        self._laplasian = Laplasian(mesh).matrix()
         self._potential = potential.matrix()
         self.hamiltonian = -0.5 * self._laplasian + self._potential
         self._operator = -1j * self.hamiltonian
@@ -29,7 +29,7 @@ class Schroedinger:
         index = 0
         sol = zeros([self._t_num, self._x_num], dtype=complex)
         print("now solving\n")
-        while self.ode.successful() and self.ode.t < self._tmax:
+        while self.ode.successful() and index < self._t_num:
             fin = round(index * 100 / self._t_num, 2)
             print('\r {}% doing! '.format(fin), end=' ', flush=True)
             sol[index] = self.ode.integrate(self.ode.t + self._dt)

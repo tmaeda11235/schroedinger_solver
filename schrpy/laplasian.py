@@ -2,7 +2,7 @@ from scipy import arange, array
 from scipy.sparse import dia_matrix, csr_matrix
 
 
-class laplasian:
+class Laplasian:
 
     def __init__(self, mesh):
         self.dx = mesh.dx
