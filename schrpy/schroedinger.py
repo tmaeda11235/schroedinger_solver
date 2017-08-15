@@ -5,13 +5,13 @@ from schrpy import Laplasian
 
 class Schroedinger:
 
-    def __init__(self, potential, x0state, mesh):
+    def __init__(self, mesh,  potential, x0state, boundary="free"):
         self._x_num = mesh.x_num
         self._t_num = mesh.t_num
         self._dt = mesh.dt
         self._tmax = mesh.t_max
 
-        self._laplasian = Laplasian(mesh).matrix()
+        self._laplasian = Laplasian(mesh).matrix(boundary=boundary)
         self._potential = potential.matrix()
         self.hamiltonian = -0.5 * self._laplasian + self._potential
         self._operator = -1j * self.hamiltonian
@@ -19,7 +19,7 @@ class Schroedinger:
         self._x0 = x0state.vector()
 
         self.ode = ode(self.equation)
-        self.ode.set_integrator('zvode', method='adams', nsteps=1000000)
+        self.ode.set_integrator('zvode', method="adams", nsteps=1000000)
         self.ode.set_initial_value(self._x0)
 
     def equation(self, t, phi0):

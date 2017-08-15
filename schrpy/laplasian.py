@@ -1,5 +1,5 @@
-from scipy import arange, array
-from scipy.sparse import dia_matrix, csr_matrix
+from scipy import arange, array, zeros
+from scipy.sparse import dia_matrix, csr_matrix, coo_matrix
 
 
 class Laplasian:
@@ -8,18 +8,56 @@ class Laplasian:
         self.dx = mesh.dx
         self.x_num = mesh.x_num
 
-    def matrix(self):
+    def _core_matrix(self) -> csr_matrix:
         # noinspection PyTypeChecker
-        det = array(1 / (360 * self.dx ** 2))
+        det = 1 / (360 * self.dx ** 2)
         coeff = array([[4], [-54], [540], [-980], [540], [-54], [4]])
         std = det * coeff
         data = std.repeat(self.x_num + 1, axis=1)
         pad = arange(-3, 4)
-        dia = dia_matrix((data, pad), shape=(self.x_num, self.x_num))
+        dia = dia_matrix((data, pad), shape=(self.x_num, self.x_num), dtype=complex)
         csr = dia.tocsr()
-        fix = csr.data
-        bound = array([-440, 486, -50, 4, 486, -976, 540, -54, 4, -50]) * det
-        fix[:10] = bound
-        fix[-10:] = bound[::-1]
-        fixed = csr_matrix((fix, csr.indices, csr.indptr), dtype=complex)
-        return fixed
+        return csr
+
+    def matrix(self, boundary="free"):
+        det = 1 / (360 * self.dx ** 2)
+        csr = self._core_matrix()
+        if boundary == "free":
+            data = csr.data
+            bound = array([-980, 1080, -108, 8, 540, -1034, 544, -54, 4, -54, 544]) * det
+            data[:11] = bound
+            data[-11:] = bound[::-1]
+            matrix = csr_matrix((data, csr.indices, csr.indptr), dtype=complex)
+            return matrix
+        elif boundary == "fix":
+            data = csr.data
+            bound = array([-980, 0, 0, 0, 540, -926, 536, -54, 4, -54, 536]) * det
+            data[:11] = bound
+            data[-11:] = bound[::-1]
+            matrix = csr_matrix((data, csr.indices, csr.indptr), dtype=complex)
+            return matrix
+        elif boundary == "period":
+            n = self.x_num
+            data = array([4, -54, 540,  4, -54,  4,  4, -54,  4, 540, -54,  4]) * det
+            row = array([0, 0, 0, 1, 1, 2, n-3, n-2, n-2,  n-1,  n-1, n-1])
+            col = array([n-3,  n-2,  n-1, n-2, n-1, n-1, 0, 0, 1, 0, 1, 2])
+            coo = coo_matrix((data, (row, col)), shape=(n, n), dtype=complex)
+            bound = coo.tocsr()
+            matrix = csr + bound
+            return matrix
+        elif boundary == "absorb":
+            data = csr.data
+            bound = array([-980, 1080, -108, 8, 540, -1034, 544, -54, 4, -54, 544]) * det
+            data[:11] = bound
+            data[-11:] = bound[::-1]
+            free = csr_matrix((data, csr.indices, csr.indptr), dtype=complex)
+            data2 = zeros(self.x_num, dtype=complex)
+            data2[-40:] = 2 ** -5 * (1j + 1) * arange(40) ** 2
+            data2 = data2 + data2[::-1]
+            data.transpose()
+            dia = dia_matrix((data2, zeros(1)), shape=(self.x_num, self.x_num)).tocsr()
+            return free + dia
+
+
+
+

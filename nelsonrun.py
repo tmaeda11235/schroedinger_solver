@@ -11,7 +11,7 @@ t = sci.arange(0, 15, 0.001)
 print("t")
 init = sci.random.normal(loc=-15, size=100000, scale=3.0)
 print("init")
-nel = sch.nelson(x, t, psi, init)
+nel = sch.Nelson(x, t, psi, init)
 print("nel")
 k = 0
 s = 0

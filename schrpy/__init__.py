@@ -3,7 +3,7 @@ from schrpy.potential import BoxPotential, KPPotential, StepPotential, Potential
 from schrpy.laplasian import Laplasian  # noqa
 from schrpy.schroedinger import Schroedinger  # noqa
 from schrpy.state import State, GaussianState  # noqa
-from schrpy.nelson import nelson  # noqa
+from schrpy.nelson import Nelson  # noqa
 from schrpy.mesh import Mesh, MyMesh  #noqa
 from schrpy.note import Note  #noqa
 

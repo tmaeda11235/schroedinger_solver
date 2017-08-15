@@ -1,5 +1,6 @@
 from scipy.stats import norm
-from scipy import array, exp, linspace, ndarray
+from scipy import random
+from scipy import array, exp, linspace, ndarray, absolute, ones, empty, append
 from scipy.interpolate import interp1d
 
 
@@ -14,6 +15,21 @@ class _CoreState:
 
     def vector(self):
         pass
+
+    def random_values(self, n):
+        probability = absolute(self.vector()) ** 2
+        probability = probability * 10000  # 有効数字を3ケタ以上取るために10000倍する
+        probability_naturalized = probability.astype(int)
+        target = []
+        for i in range(self._x_num):
+            weight = probability_naturalized[i]
+            if not weight == 0:
+                weight_array = i * ones(weight, dtype=int)
+                target.extend(weight_array.tolist())
+        max_random = len(target)
+        target_index = random.randint(0, max_random, n)
+        random_index = array(target)[target_index]
+        return self._x_vector[random_index]
 
 
 class State(_CoreState):
@@ -43,7 +59,7 @@ class GaussianState(_CoreState):
         self.wave_number = wave_number
 
     def _func(self, x):
-        pdf = array(norm.pdf(x, self.mean, self.sd), dtype=complex)
+        pdf = array(norm.pdf(x, self.mean, self.sd / 2), dtype=complex)
         wav = exp(1j * self.wave_number * x)
         return pdf * wav
 
