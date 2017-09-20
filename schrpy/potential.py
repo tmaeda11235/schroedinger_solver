@@ -1,155 +1,89 @@
 from scipy.sparse import dia_matrix
-from scipy.signal import sawtooth
-from scipy.interpolate import interp1d
-from scipy import pi, ndarray, linspace
-from unittest import mock
+from scipy import ndarray, array
+from schrpy.mesh import Mesh
+from numbers import Real
 
 
 class __Potential:
-    """If you make this class. you should overwrite func() method. func() method defines evaluation of potential
+    """If you make this class. you should overwrite vector() method. It defines evaluation of potential
     actual value. """
-
     def __init__(self, mesh):
-        self._x_vector = mesh.x_vector
-        self._x_num = mesh.x_num
-        self._x_min = mesh.x_min
-        self._x_max = mesh.x_max
-        self.mesh_param = mesh.param
+        assert isinstance(mesh, Mesh)
+        self.mesh = mesh
+        self._vec = None
 
     def vector(self):
-        pass
+        return self._vec
 
     def matrix(self):
         offset = [0]
-        n = self._x_num
+        n = self.mesh.x_num
         mat = dia_matrix((self.vector(), offset), shape=(n, n), dtype=complex)
         return mat.tocsr()
 
+    def __add__(self, other):
+        assert isinstance(other, self.__class__)
+        assert self.mesh == other.mesh, "DIFFERENT MESH "
+        return Potential(self.mesh, self.vector() + other.vector())
+
+    def __mul__(self, other):
+        assert isinstance(other, Real)
+        return Potential(self.mesh, other * self.vector())
+
+    def __sub__(self, other):
+        assert self.mesh == other.mesh, "DIFFERENT MESH"
+        return self.__add__(other.__mul__(-1))
+
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __eq__(self, other):
+        return self.mesh == other.mesh and self.vector() == other.vector()
+
 
 class Potential(__Potential):
-    """Putting function, you can make original potential. """
-
+    """Putting function or ndarray, you can make original potential. """
     def __init__(self, mesh, arg):
-        super(Potential, self).__init__(mesh)
-        if isinstance(arg, ndarray) and arg.len() == self._x_num:
+        super().__init__(mesh)
+        if isinstance(arg, ndarray):
+            assert arg.size == mesh.x_num, "ndarray.size must be equal to mesh.num"
             self._vec = arg
-        elif isinstance(arg, ndarray):
-            tics = linspace(self._x_min, self._x_max, num=self._vec.len())
-            self._func = interp1d(tics, self._vec)
-            self._vec = self._func(self._x_vector)
         elif callable(arg):
             self._func = arg
-            self._vec = self._func(self._x_vector)
-
-    def vector(self):
-            return self._vec
+            self._vec = self._func(self.mesh.x_vector)
+        raise AssertionError("arg should be ndarray or callable")
 
 
-class _CorePotential(__Potential):
-    """If you make this class. you should overwrite set_property(). The height represents strength of potential. """
+class Usual:
+    @staticmethod
+    def step(mesh, height, distance):
+        assert all(isinstance(x, Real) for x in (height, distance))
+        v = array([height if distance <= x else 0 for x in mesh.x_vector])
+        return Potential(mesh, v)
 
-    def __init__(self, mesh, height):
-        super(_CorePotential, self).__init__(mesh)
-        self.height = height
+    @staticmethod
+    def box(mesh, height, distance, barrier):
+        a = Usual.step(mesh, height, distance)
+        b = Usual.step(mesh, height, distance + barrier)
+        return a - b
 
-    def vector(self):
-        return self.func(self._x_vector)
+    @staticmethod
+    def vacuum_kp(mesh, height, well, barrier):
+        period = well + barrier
+        cycle = (mesh.x_max / period).__ceil__()
+        return sum(Usual.box(mesh, height, i * period, i * period + barrier) for i in range(cycle))
 
-    def set_property(self, **args):
-        if 'height' in args:
-            self.height = args['height']
-        return self
+    @staticmethod
+    def kp_vacuum(mesh, height, well, barrier):
+        period = well + barrier
+        cycle = (mesh.x_min / period).__ceil__()
+        return sum(Usual.box(mesh, height, -(i-1) * period, -(i-1) * period + barrier) for i in range(cycle))
 
-    def set_height(self, height):
-        self.height = height
-        return self
-
-    def func(self, x):
-        pass
-
-
-class StepPotential(_CorePotential):
-    """This potential is raised up the right hand side. The distance represents the position of cliff. """
-
-    def __init__(self, mesh, height, distance):
-        super(StepPotential, self).__init__(mesh, height)
-        self.distance = distance
-
-    def set_property(self, **args):
-        super(StepPotential, self).set_property(**args)
-        if 'distance' in args:
-            self.distance = args['distance']
-        return self
-
-    def set_distance(self, distance):
-        self.distance = distance
-        return self
-
-    def func(self, x):
-        val = self.height * (x > self.distance)
-        return val
-
-
-class BoxPotential(_CorePotential):
-
-    def __init__(self, mesh, height, distance, barrier):
-        super(BoxPotential, self).__init__(mesh, height)
-        self.distance = distance
-        self.barrier = barrier
-
-    def set_property(self, **args):
-        super(BoxPotential, self).set_property(**args)
-        if 'disanse' in args:
-            self.distance = args['distance']
-        if 'barrier' in args:
-            self.barrier = args['barrier']
-        return self
-
-    def set_distance(self, distance):
-        self.distance = distance
-        return self
-
-    def set_barrier(self, barrier):
-        self.barrier = barrier
-        return self
-
-    def func(self, x):
-        dummy = mock.Mock(x_vector=self._x_vector, x_num=self._x_num)
-        raised = StepPotential(dummy, self.height, self.distance).func(x)
-        fallen = StepPotential(dummy, self.height, self.distance + self.barrier).func(x)
-        return raised - fallen
-
-
-class KPPotential(_CorePotential):
-
-    def __init__(self, mesh, height, well, barrier):
-        super(KPPotential, self).__init__(mesh, height)
-        self.well = well
-        self.barrier = barrier
-        self._span = well + barrier
-
-    def set_property(self, **args):
-        super(KPPotential, self).set_property(**args)
-        if 'well' in args:
-            self.well = args['well']
-        if 'barrier' in args:
-            self.barrier = args['barrier']
-        self._span = self.well + self.barrier
-        return self
-
-    # noinspection PyTypeChecker
-    def func(self, x):
-        nom = 2 * pi * x / self._span
-        saw = self._span * (sawtooth(nom) + 1) / 2
-        dummy = mock.Mock(x_vector=self._x_vector, x_num=self._x_num)
-        bp = BoxPotential(dummy, self.height, self.well, self.barrier)
-        return bp.func(saw)
-
-
-class UsKPPotential(KPPotential):
-
-    def func(self, x):
-        dummy = mock.Mock(x_vector=self._x_vector, x_num=self._x_num)
-        flp = super(UsKPPotential, self).func(-x)
-        rtn = StepPotential(dummy, 1, 0).func(x) * flp
-        return rtn
+    @staticmethod
+    def kp(mesh, height, well, barrier):
+        v1 = Usual.vacuum_kp(mesh, height, well, barrier).vector()
+        v2 = Usual.kp_vacuum(mesh, height, well, barrier).vector()
+        return Potential(mesh, v1+v2)
