@@ -14,7 +14,18 @@ class Laplasian:
         coeff = array([[4], [-54], [540], [-980], [540], [-54], [4]])
         std = det * coeff
         data = std.repeat(self.x_num + 1, axis=1)
-        pad = arange(-3, 4)
+        pad = arange(-3, 3 + 1)
+        dia = dia_matrix((data, pad), shape=(self.x_num, self.x_num), dtype=complex)
+        csr = dia.tocsr()
+        return csr
+
+    def poor_matrix(self) -> csr_matrix:
+        # noinspection PyTypeChecker
+        det = 1 / (self.dx ** 2)
+        coeff = array([[1], [-2], [1]])
+        std = det * coeff
+        data = std.repeat(self.x_num + 1, axis=1)
+        pad = arange(-1, 1 + 1)
         dia = dia_matrix((data, pad), shape=(self.x_num, self.x_num), dtype=complex)
         csr = dia.tocsr()
         return csr
@@ -52,11 +63,20 @@ class Laplasian:
             data[-11:] = bound[::-1]
             free = csr_matrix((data, csr.indices, csr.indptr), dtype=complex)
             data2 = zeros(self.x_num, dtype=complex)
-            data2[-40:] = 2 ** -5 * (1j + 1) * arange(40) ** 2
+            data2[-40:] = 2 ** -6 * (1j + 1) * arange(40) ** 2
             data2 = data2 + data2[::-1]
             data.transpose()
             dia = dia_matrix((data2, zeros(1)), shape=(self.x_num, self.x_num)).tocsr()
             return free + dia
+        elif boundary == "poor":
+            det = 1 / (self.dx ** 2)
+            coeff = array([[1], [-2], [1]])
+            std = det * coeff
+            data = std.repeat(self.x_num + 1, axis=1)
+            pad = arange(-1, 1 + 1)
+            dia = dia_matrix((data, pad), shape=(self.x_num, self.x_num), dtype=complex)
+            csr = dia.tocsr()
+            return csr
 
 
 

@@ -36,7 +36,7 @@ class State(_CoreState):
 
     def __init__(self, mesh, arg):
         super(State, self).__init__(mesh)
-        if isinstance(arg, ndarray) and arg.len() == self._x_num:
+        if isinstance(arg, ndarray) and len(arg) == self._x_num:
             self._vec = arg
         elif isinstance(arg, ndarray):
             tics = linspace(self._x_min, self._x_max, num=self._vec.len())
