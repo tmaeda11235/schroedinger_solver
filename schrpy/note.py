@@ -55,7 +55,7 @@ class Note:
         above.set_title(title)
         above.tick_params(labelbottom="off")
         above.set_ylabel("time(a.u.)")
-        # under.tick_params(labelleft="off")
+        under.tick_params(labelleft="off")
         under.set_xlabel("space(a.u.)")
 
         above.pcolormesh(x_grid, t_grid, phi2, cmap="nipy_spectral_r", norm=norm)
