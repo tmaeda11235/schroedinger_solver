@@ -1,10 +1,11 @@
-import schrpy as sp
+import QuantumSketchBook as sp
 import scipy as sc
 from matplotlib.pyplot import figure
 from matplotlib.colors import Normalize
 
 
 class Note:
+
     def __init__(self, mesh, mass=1):
         self.mesh = mesh
         self.potential = sp.Potential(self.mesh, lambda x: 0 * x)
@@ -14,11 +15,13 @@ class Note:
         self.mass = mass
 
     def set_potential(self, potential):
-        assert potential.mesh_param == self.mesh.param, "Different meshes have been imputed. "
+        if not potential.mesh_param == self.mesh.param:
+            raise ValueError("Different meshes have been imputed. ")
         self.potential = potential
 
     def set_initial(self, state):
-        assert state.mesh_param == self.mesh.param, "Different meshes have been imputed. "
+        if not state.mesh_param == self.mesh.param:
+            raise ValueError("Different meshes have been imputed. ")
         self.initial = state
 
     def solve_schroedinger_equation(self, boundary="free"):
@@ -31,7 +34,8 @@ class Note:
 
     def load_solution(self, file_name):
         sol = sc.load(file_name)
-        assert sol.shape == (self.mesh.t_num, self.mesh.x_num), "Different meshes have been imputed"
+        if not sol.shape == (self.mesh.t_num, self.mesh.x_num):
+            raise ValueError("Different meshes have been imputed")
         self.solution = sol
 
     def generate_locus(self, n, run_times=10):
