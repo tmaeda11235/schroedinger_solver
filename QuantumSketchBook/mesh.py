@@ -1,8 +1,17 @@
 from scipy import arange
+from numbers import Real
 
 
 class Mesh:
+
     def __init__(self, x_min, x_max, dx, t_min, t_max, dt):
+        if not all(isinstance(x, Real) for x in (x_min, x_max, dx, t_min, t_max, dt)):
+            raise TypeError
+        if not (x_min < x_max or t_min < t_max):
+            raise ValueError("The min should be shorter than The max. ")
+        if not (0 < dx or 0 < dt):
+            raise ValueError("The dx and dt should be positive. ")
+
         self.x_min = x_min
         self.x_max = x_max
         self.dx = dx
@@ -26,6 +35,5 @@ class Mesh:
         return self.param == other.param
 
 
-class MyMesh(Mesh):
-    def __init__(self, x_min=-60, x_max=60, dx=0.02, t_min=0, t_max=20, dt=0.02):
-        super(MyMesh, self).__init__(x_min, x_max, dx, t_min, t_max, dt)
+def my_mesh(self, x_min=-60, x_max=60, dx=0.02, t_min=0, t_max=20, dt=0.02):
+    return Mesh(x_min, x_max, dx, t_min, t_max, dt)
