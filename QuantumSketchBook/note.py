@@ -49,7 +49,7 @@ class Note:
         t_step = int(self.mesh.x_num / max_pix[1]) + 1
         x_grid, t_grid = sc.meshgrid(self.mesh.x_vector[::x_step], self.mesh.t_vector[::t_step])
         phi2 = sc.absolute(self.solution[1::t_step, ::x_step]) ** 2
-        potential = self.potential.vector()
+        potential = self.potential.vector
         x = self.mesh.x_vector
         norm = Normalize(vmax=phi2[0].max())
         fig = figure()

@@ -1,6 +1,6 @@
 from scipy.stats import norm
 from scipy import random
-from scipy import array, exp, linspace, ndarray, absolute, ones, empty, append
+from scipy import array, exp, linspace, ndarray, absolute, ones
 from scipy.interpolate import interp1d
 
 
@@ -46,6 +46,7 @@ class State(_CoreState):
             self._func = arg
             self._vec = self._func(self._x_vector)
 
+    @property
     def vector(self):
         return self._vec
 

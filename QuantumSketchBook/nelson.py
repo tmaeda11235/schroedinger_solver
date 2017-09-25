@@ -1,19 +1,20 @@
 from scipy import imag, real, log, sqrt, random, zeros
 from scipy.interpolate import RectBivariateSpline
+from QuantumSketchBook import Schroedinger
 
 
 class Nelson:
-    def __init__(self, mesh, psi, x_init, run_times=10):
+    def __init__(self, schrodinger: Schroedinger, n: int, micro_steps=10):
+        self.mesh = schrodinger.mesh
+        psi = schrodinger.solution()
         imz, rez = imag(log(psi)), real(log(psi))
-        self.realSpline = RectBivariateSpline(mesh.t_vector, mesh.x_vector, rez)
-        self.imagSpline = RectBivariateSpline(mesh.t_vector, mesh.x_vector, imz)
-        self.t = mesh.t_min
-        self.dt = mesh.dt
-        self.t_num = mesh.t_num
-        self.x = x_init
-        self.n = len(x_init)
-        self.t_micro = mesh.dt / run_times
-        self.run_times = run_times
+        self.realSpline = RectBivariateSpline(self.mesh.t_vector, self.mesh.x_vector, rez)
+        self.imagSpline = RectBivariateSpline(self.mesh.t_vector, self.mesh.x_vector, imz)
+        self.x = schrodinger.x0state.random_values(n)
+        self.t = self.mesh.t_min
+        self.n = n
+        self.t_micro = self.mesh.dt / micro_steps
+        self.micro_steps = micro_steps
 
     def drift(self, x, t):
         re = self.realSpline.ev(t, x, dy=1)
@@ -31,11 +32,11 @@ class Nelson:
         return self
 
     def locus(self):
-        locus_array = zeros((self.n, self.t_num))
+        locus_array = zeros((self.n, self.mesh.t_num))
         locus_array[:, 0] = self.x
-        for i in range(1, self.t_num):
-            print("\rNelson {}% done ! now".format(int(100 * i / self.t_num)), end=" ", flush=True)
-            for j in range(self.run_times-1):
+        for i in range(1, self.mesh.t_num):
+            print("\rNelson {}% done ! now".format(int(100 * i / self.mesh.t_num)), end=" ", flush=True)
+            for j in range(self.micro_steps-1):
                 self.run()
             locus_array[:, i] = self.run()
         return locus_array
