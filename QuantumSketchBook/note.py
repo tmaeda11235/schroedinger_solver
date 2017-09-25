@@ -1,4 +1,6 @@
 import QuantumSketchBook as sp
+from QuantumSketchBook.potential import Potential
+from QuantumSketchBook.state import State
 import scipy as sc
 from matplotlib.pyplot import figure
 from matplotlib.colors import Normalize
@@ -10,23 +12,26 @@ class Note:
         self.mesh = mesh
         self.potential = sp.potential(self.mesh, lambda x: 0 * x)
         self.initial = sp.gaussian_state(self.mesh, 0, 1, 0)
+        self.hamiltonian = sp.Hamiltonian(self.mass, self.potential, mass=mass)
+        self.schroedinger = sp.Schroedinger(self.hamiltonian, self.initial)
         self.solution = None
         self.locus = None
         self.mass = mass
 
-    def set_potential(self, potential):
-        if not potential.mesh_param == self.mesh.param:
-            raise ValueError("Different meshes have been imputed. ")
+    def set_potential(self, potential: Potential):
+        if not potential.mesh.param == self.mesh.param:
+            raise ValueError("objects based on different meshes have been imputed. ")
         self.potential = potential
 
-    def set_initial(self, state):
-        if not state.mesh_param == self.mesh.param:
-            raise ValueError("Different meshes have been imputed. ")
+    def set_initial(self, state: State):
+        if not state.mesh.param == self.mesh.param:
+            raise ValueError("objects based on different meshes have been imputed. ")
         self.initial = state
 
     def solve_schroedinger_equation(self, boundary="free"):
-        self.solution = sp.Schroedinger(self.mesh, self.potential, self.initial,
-                                        boundary=boundary, mass=self.mass).solve()
+        self.hamiltonian = sp.Hamiltonian(self.mesh, self.potential, mass=self.mass, boundary=boundary)
+        self.schroedinger = sp.Schroedinger(self.hamiltonian, self.initial)
+        self.solution = self.schroedinger.solution()
         return self.solution
 
     def save_solution(self, file_name):
@@ -38,9 +43,8 @@ class Note:
             raise ValueError("Different meshes have been imputed")
         self.solution = sol
 
-    def generate_locus(self, n, run_times=10):
-        random_init = self.initial.random_values(n)
-        nel = sp.Nelson(self.mesh, self.solution + 2 ** -50, random_init, run_times=run_times)
+    def generate_locus(self, n, micro_steps=10):
+        nel = sp.Nelson(self.schroedinger, n, micro_steps=micro_steps)
         self.locus = nel.locus()
         return self.locus
 
