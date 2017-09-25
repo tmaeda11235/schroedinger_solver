@@ -8,8 +8,8 @@ class Note:
 
     def __init__(self, mesh, mass=1):
         self.mesh = mesh
-        self.potential = sp.Potential(self.mesh, lambda x: 0 * x)
-        self.initial = sp.GaussianState(self.mesh, 0, 1, 0)
+        self.potential = sp.potential(self.mesh, lambda x: 0 * x)
+        self.initial = sp.gaussian_state(self.mesh, 0, 1, 0)
         self.solution = None
         self.locus = None
         self.mass = mass

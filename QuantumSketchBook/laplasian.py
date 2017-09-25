@@ -1,10 +1,11 @@
 from scipy import arange, array, zeros
 from scipy.sparse import dia_matrix, csr_matrix, coo_matrix
+from QuantumSketchBook.mesh import Mesh
 
 
 class Laplasian:
 
-    def __init__(self, mesh):
+    def __init__(self, mesh: Mesh):
         self.dx = mesh.dx
         self.x_num = mesh.x_num
 
@@ -19,18 +20,7 @@ class Laplasian:
         csr = dia.tocsr()
         return csr
 
-    def poor_matrix(self) -> csr_matrix:
-        # noinspection PyTypeChecker
-        det = 1 / (self.dx ** 2)
-        coeff = array([[1], [-2], [1]])
-        std = det * coeff
-        data = std.repeat(self.x_num + 1, axis=1)
-        pad = arange(-1, 1 + 1)
-        dia = dia_matrix((data, pad), shape=(self.x_num, self.x_num), dtype=complex)
-        csr = dia.tocsr()
-        return csr
-
-    def matrix(self, boundary="free"):
+    def matrix(self, boundary="free") -> csr_matrix:
         det = 1 / (360 * self.dx ** 2)
         csr = self._core_matrix()
         if boundary == "free":

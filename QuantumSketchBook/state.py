@@ -1,6 +1,6 @@
+from QuantumSketchBook.field import Field
 from scipy.stats import norm
 from scipy import array, exp, absolute, ones, random
-from QuantumSketchBook.field import Field
 
 
 class State(Field):

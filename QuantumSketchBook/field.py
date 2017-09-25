@@ -1,4 +1,4 @@
-from QuantumSketchBook import Mesh
+from QuantumSketchBook.mesh import Mesh
 from scipy import ndarray
 
 

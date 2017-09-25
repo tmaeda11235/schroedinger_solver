@@ -1,7 +1,7 @@
-from scipy.sparse import dia_matrix
-from scipy import array
 from QuantumSketchBook.mesh import Mesh
 from QuantumSketchBook.field import Field
+from scipy.sparse import dia_matrix
+from scipy import array
 from numbers import Real
 from math import ceil, floor
 

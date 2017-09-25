@@ -1,6 +1,6 @@
+from QuantumSketchBook.state import State
 from scipy import zeros
 from scipy.integrate import ode
-from QuantumSketchBook.state import State
 
 
 class Schroedinger:

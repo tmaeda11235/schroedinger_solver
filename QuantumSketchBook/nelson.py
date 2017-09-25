@@ -1,16 +1,16 @@
+from QuantumSketchBook import Schroedinger
 from scipy import imag, real, log, sqrt, random, zeros
 from scipy.interpolate import RectBivariateSpline
-from QuantumSketchBook import Schroedinger
 
 
 class Nelson:
-    def __init__(self, schrodinger: Schroedinger, n: int, micro_steps=10):
-        self.mesh = schrodinger.mesh
-        psi = schrodinger.solution()
+    def __init__(self, schroedinger: Schroedinger, n: int, micro_steps=10):
+        self.mesh = schroedinger.mesh
+        psi = schroedinger.solution()
         imz, rez = imag(log(psi)), real(log(psi))
         self.realSpline = RectBivariateSpline(self.mesh.t_vector, self.mesh.x_vector, rez)
         self.imagSpline = RectBivariateSpline(self.mesh.t_vector, self.mesh.x_vector, imz)
-        self.x = schrodinger.x0state.random_values(n)
+        self.x = schroedinger.x0state.random_values(n)
         self.t = self.mesh.t_min
         self.n = n
         self.t_micro = self.mesh.dt / micro_steps
