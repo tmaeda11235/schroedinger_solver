@@ -1,10 +1,9 @@
 from scipy.sparse import dia_matrix
 from scipy import array
-from QuantumSketchBook import Mesh, Field
+from QuantumSketchBook.mesh import Mesh
+from QuantumSketchBook.field import Field
 from numbers import Real
 from math import ceil, floor
-from functools import reduce
-from operator import add
 
 
 class Potential(Field):
@@ -12,7 +11,6 @@ class Potential(Field):
     If you make this class. you should overwrite vector() method.
     It defines evaluation of potential actual value. """
 
-    @property
     def matrix(self):
         offset = [0]
         n = self.mesh.x_num
@@ -43,6 +41,10 @@ def potential(mesh: Mesh, arg):
     return Potential(mesh, arg)
 
 
+def free(mesh):
+    return potential(mesh, lambda x: 0)
+
+
 def step(mesh: Mesh, height: Real, distance: Real):
     if not all(isinstance(x, Real) for x in (height, distance)):
         raise TypeError
@@ -53,28 +55,29 @@ def step(mesh: Mesh, height: Real, distance: Real):
 def box(mesh: Mesh, height: Real, distance: Real, barrier: Real):
     if not barrier > 0:
         raise ValueError("barrier should be positive. ")
-    a = step(mesh, height, distance)
-    b = step(mesh, height, distance + barrier)
-    return a - b
+    near = step(mesh, height, distance)
+    far = step(mesh, height, distance + barrier)
+    return near - far
 
 
 def vacuum_kp(mesh: Mesh, height: Real, well: Real, barrier: Real):
     period = well + barrier
     cycle = ceil(mesh.x_max / period) if mesh.x_max > 0 else 1
-    return reduce(add, (box(mesh, height, i * period, barrier) for i in range(cycle)))
+    gen = (box(mesh, height, i * period, barrier) for i in range(cycle))
+    return sum(gen, free(mesh))
 
 
 def kp_vacuum(mesh: Mesh, height, well, barrier):
     period = well + barrier
     cycle = -floor(mesh.x_min / period) if mesh.x_min < 0 else 1
-    gen = (box(mesh, height, -(i +1) * period, barrier) for i in range(cycle))
-    return reduce(add, gen)
+    gen = (box(mesh, height, -(i + 1) * period, barrier) for i in range(cycle))
+    return sum(gen, free(mesh))
 
 
 def kp(mesh: Mesh, height, well, barrier):
-    v1 = vacuum_kp(mesh, height, well, barrier).vector
-    v2 = kp_vacuum(mesh, height, well, barrier).vector
-    return potential(mesh, v1 + v2)
+    v1 = vacuum_kp(mesh, height, well, barrier)
+    v2 = kp_vacuum(mesh, height, well, barrier)
+    return v1 + v2
 
 if __name__ == "__main__":
     from QuantumSketchBook import *
