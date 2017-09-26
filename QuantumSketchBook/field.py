@@ -1,14 +1,11 @@
-from QuantumSketchBook.mesh import Mesh
+from QuantumSketchBook.quantized import Quantized
 from scipy import ndarray
 
 
-class Field:
+class Field(Quantized):
 
-    def __init__(self, mesh: Mesh, arg):
-        if not isinstance(mesh, Mesh):
-            raise TypeError("mesh should be QSB.Mesh")
-        self.mesh = mesh
-
+    def __init__(self, arg, mesh=None):
+        super().__init__(mesh=mesh)
         if isinstance(arg, ndarray):
             if not arg.size == mesh.x_num:
                 raise ValueError("ndarray.size must be equal to mesh.num")
