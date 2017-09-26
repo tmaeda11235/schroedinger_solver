@@ -1,4 +1,5 @@
 from QuantumSketchBook.field import Field
+from QuantumSketchBook.context import MeshContext
 from scipy.stats import norm
 from scipy import array, exp, absolute, ones, random
 
@@ -21,8 +22,13 @@ class State(Field):
         return self.mesh.x_vector[random_index]
 
 
-def gaussian_state(mesh, mean, sd, wave_number):
-    x = mesh.x_vector
+def state(arg):
+    mesh = MeshContext.get_mesh()
+    return State(mesh, arg)
+
+
+def gaussian_state(mean, sd, wave_number):
+    x = MeshContext.get_mesh().x_vector
     pdf = norm.pdf(x, mean, sd / 2)
     wav = exp(1j * wave_number * x)
-    return State(mesh, array(pdf * wav, dtype=complex))
+    return State(array(pdf * wav, dtype=complex))

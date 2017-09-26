@@ -1,11 +1,12 @@
 from QuantumSketchBook.laplasian import Laplasian
 from QuantumSketchBook.schroedinger import Schroedinger
+from QuantumSketchBook.quantized import Quantized
 
 
-class Hamiltonian:
+class Hamiltonian(Quantized):
 
-    def __init__(self, mesh, potential, mass=1, boundary="free"):
-        self.mesh = mesh
+    def __init__(self, potential, mass=1, boundary="free", mesh=None):
+        super().__init__(mesh=mesh)
         self.mass = mass
         lap = Laplasian(mesh).matrix(boundary=boundary)
         pot = potential.matrix()

@@ -1,5 +1,5 @@
-from QuantumSketchBook.mesh import Mesh
 from QuantumSketchBook.field import Field
+from QuantumSketchBook.context import MeshContext
 from scipy.sparse import dia_matrix
 from scipy import array
 from numbers import Real
@@ -37,50 +37,52 @@ class Potential(Field):
         return self.mesh == other.mesh and self.vector() == other.vector
 
 
-def potential(mesh: Mesh, arg):
+def potential(arg):
+    mesh = MeshContext.get_mesh()
     return Potential(mesh, arg)
 
 
-def free(mesh):
-    return potential(mesh, lambda x: 0)
+def free():
+    return potential(lambda x: 0)
 
 
-def step(mesh: Mesh, height: Real, distance: Real):
+def step(height: Real, distance: Real):
     if not all(isinstance(x, Real) for x in (height, distance)):
         raise TypeError
-    v = array([height if distance <= x else 0 for x in mesh.x_vector])
-    return potential(mesh, v)
+    v = array([height if distance <= x else 0 for x in MeshContext.get_mesh().x_vector])
+    return potential(v)
 
 
-def box(mesh: Mesh, height: Real, distance: Real, barrier: Real):
+def box(height: Real, distance: Real, barrier: Real):
     if not barrier > 0:
         raise ValueError("barrier should be positive. ")
-    near = step(mesh, height, distance)
-    far = step(mesh, height, distance + barrier)
+    near = step(height, distance)
+    far = step(height, distance + barrier)
     return near - far
 
 
-def vacuum_kp(mesh: Mesh, height: Real, well: Real, barrier: Real):
+def vacuum_kp(height, well, barrier):
+    x_max = MeshContext.get_mesh().x_max
     period = well + barrier
-    cycle = ceil(mesh.x_max / period) if mesh.x_max > 0 else 1
-    gen = (box(mesh, height, i * period, barrier) for i in range(cycle))
-    return sum(gen, free(mesh))
+    cycle = ceil(x_max / period) if x_max > 0 else 1
+    gen = (box(height, i * period, barrier) for i in range(cycle))
+    return sum(gen, free())
 
 
-def kp_vacuum(mesh: Mesh, height, well, barrier):
+def kp_vacuum(height, well, barrier):
+    x_min = MeshContext.get_mesh().x_min
     period = well + barrier
-    cycle = -floor(mesh.x_min / period) if mesh.x_min < 0 else 1
-    gen = (box(mesh, height, -(i + 1) * period, barrier) for i in range(cycle))
-    return sum(gen, free(mesh))
+    cycle = -floor(x_min / period) if x_min < 0 else 1
+    gen = (box(height, -(i + 1) * period, barrier) for i in range(cycle))
+    return sum(gen, free())
 
 
-def kp(mesh: Mesh, height, well, barrier):
-    v1 = vacuum_kp(mesh, height, well, barrier)
-    v2 = kp_vacuum(mesh, height, well, barrier)
+def kp(height, well, barrier):
+    v1 = vacuum_kp(height, well, barrier)
+    v2 = kp_vacuum(height, well, barrier)
     return v1 + v2
 
 if __name__ == "__main__":
-    from QuantumSketchBook import *
-    a = step(my_mesh(), 3, 1)
-    b = step(my_mesh(), 4, 2)
-    kp(my_mesh(), 1, 1, 1)
+    a = step(3, 1)
+    b = step(2, 2)
+    kp(1, 1, 1)

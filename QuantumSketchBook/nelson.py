@@ -1,11 +1,15 @@
-from QuantumSketchBook import Schroedinger
+from QuantumSketchBook.schroedinger import Schroedinger
+from QuantumSketchBook.quantized import Quantized
+from QuantumSketchBook.context import MeshContext
 from scipy import imag, real, log, sqrt, random, zeros
 from scipy.interpolate import RectBivariateSpline
 
 
-class Nelson:
+class Nelson(Quantized):
     def __init__(self, schroedinger: Schroedinger, n: int, micro_steps=10):
         self.mesh = schroedinger.mesh
+        if MeshContext.is_follower(schroedinger):
+            MeshContext.add_follower(self)
         psi = schroedinger.solution()
         imz, rez = imag(log(psi)), real(log(psi))
         self.realSpline = RectBivariateSpline(self.mesh.t_vector, self.mesh.x_vector, rez)
