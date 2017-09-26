@@ -7,7 +7,7 @@ class Schroedinger:
 
     def __init__(self, hamiltonian, x0state: State):
         self.mesh = hamiltonian.mesh
-        self._operator = -1j * hamiltonian.matrix()
+        self._operator = -1j * hamiltonian.matrix
         self.x0state = x0state
 
         self.ode = ode(self.equation)
