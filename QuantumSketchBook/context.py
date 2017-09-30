@@ -10,13 +10,16 @@ class MeshContext:
     _has_mesh = False
     _mesh = None
     _context = None
-    _followers = set()
+    _observer = set()
+    _in_context = False
 
     def __new__(cls, mesh=None):
         if not cls._has_mesh:
+            if cls._in_context:
+                raise MeshContextError("MeshContext should not be over written in with block. ")
             if isinstance(mesh, Mesh):
                 cls._has_mesh = True
-                cls._mesh = mesh
+                cls.update_mesh(mesh)
                 cls._context = super().__new__(cls)
             else:
                 raise MeshContextError("invalid argument {} should ({})".format(mesh.__class__, Mesh.__class__))
@@ -33,8 +36,8 @@ class MeshContext:
     def update_mesh(cls, mesh):
         if isinstance(mesh, Mesh):
             cls._mesh = mesh
-        for follower in cls._followers:
-            follower.update_mesh()
+        for osv in cls._observer:
+            osv.update_mesh()
         return cls()
 
     @classmethod
@@ -43,28 +46,57 @@ class MeshContext:
 
     @classmethod
     def clean(cls):
+        cls._has_mesh = False
         cls._mesh = None
         cls._context = None
-        cls._has_mesh = False
-        return None
+        cls._observer = set()
 
     @classmethod
     def add_follower(cls, follower):
         if hasattr(follower, "update_mesh"):
-            cls._followers.add(follower)
+            cls._observer.add(follower)
         else:
-            raise ValueError("follower should have update_mesh(). ")
+            raise ValueError("observer should have update_mesh(). ")
 
     @classmethod
-    def remove_follower(cls, follower):
-        if follower in cls._followers:
-            cls._followers.discard(follower)
+    def remove_follower(cls, observer):
+        if observer in cls._observer:
+            cls._observer.discard(observer)
         else:
-            raise ValueError("{} is not follower. ".format(follower))
+            raise ValueError("{} is not observer of MeshContext. ".format(observer))
 
     @classmethod
     def is_follower(cls, item):
-        return item in cls._followers
+        return item in cls._observer
+
+    @classmethod
+    def set_context_on(cls):
+        cls._in_context = True
+
+    @classmethod
+    def set_context_off(cls):
+        cls._in_context = False
+
+
+class Context:
+
+    def __init__(self, x_min, x_max, dx, t_min, t_max, dt):
+        self.mesh = Mesh(x_min, x_max, dx, t_min, t_max, dt)
+        self._pre_mesh = None
+        self._pre_observer = set()
+
+    def __enter__(self):
+        if MeshContext.has_instance():
+            self._pre_mesh = MeshContext.get_mesh()
+        MeshContext(self.mesh)
+        MeshContext.set_context_on()
+        return self.mesh
+
+    def __exit__(self, exc_type, vallue, traceback):
+        MeshContext().set_context_off()
+        MeshContext.clean()
+        if self._pre_mesh is not None:
+            MeshContext(self._pre_mesh)
 
 
 if __name__ == "__main__":
@@ -102,3 +134,11 @@ if __name__ == "__main__":
     assert error_check()
     assert error_check(3)
     assert not error_check(mesh2)
+    MeshContext().clean()
+    with Context(-10, 0, 1, -10, 0, 1) as mm:
+        assert mm == Mesh(-10, 0, 1, -10, 0, 1)
+
+    try:
+        MeshContext.get_mesh()
+    except MeshContextError as e:
+        assert e.args[0] == "not found mesh in context"
