@@ -68,6 +68,3 @@ class Laplasian:
             csr = dia.tocsr()
             return csr
 
-
-
-
