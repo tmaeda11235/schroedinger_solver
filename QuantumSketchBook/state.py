@@ -32,3 +32,11 @@ def gaussian_state(mean, sd, wave_number):
     pdf = norm.pdf(x, mean, sd / 2)
     wav = exp(1j * wave_number * x)
     return State(array(pdf * wav, dtype=complex))
+
+
+if __name__ == "__main__":
+    import QuantumSketchBook as QSB
+    with QSB.Context(0, 10, 1, 0, 10, 1):
+        test1 = absolute(gaussian_state(5, 1, 0).vector)
+        assert max(test1) == test1[5]
+        assert test1[4] == test1[6]

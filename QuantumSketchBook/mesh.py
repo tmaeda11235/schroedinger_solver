@@ -13,7 +13,7 @@ class Mesh(namedtuple("_Mesh", "x_min, x_max, dx, t_min, t_max, dt")):
         if not (0 < dx or 0 < dt):
             raise ValueError("The dx and dt should be positive. ")
         if not (x_max - x_min > dx and t_max - t_min > dt):
-            raise ValueError("too big to make mesh. ")
+            raise ValueError("too big dx or dt to make mesh. ")
         return super().__new__(cls, x_min, x_max, dx, t_min, t_max, dt)
 
     @property
@@ -51,6 +51,7 @@ class Mesh(namedtuple("_Mesh", "x_min, x_max, dx, t_min, t_max, dt")):
 
 def my_mesh(x_min=-10, x_max=10, dx=0.1, t_min=0, t_max=10, dt=0.1):
     return Mesh(x_min, x_max, dx, t_min, t_max, dt)
+
 
 if __name__ == "__main__":
     print(my_mesh())

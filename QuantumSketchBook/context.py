@@ -10,13 +10,14 @@ class MeshContext:
     _has_mesh = False
     _mesh = None
     _context = None
-    _observer = set()
+    _observer = list()
     _in_context = False
 
     def __new__(cls, mesh=None):
         if not cls._has_mesh:
             if cls._in_context:
-                raise MeshContextError("MeshContext should not be over written in with block. ")
+                raise MeshContextError("MeshContext should not be over written in 'with block'. ")
+
             if isinstance(mesh, Mesh):
                 cls._has_mesh = True
                 cls.update_mesh(mesh)
@@ -30,7 +31,7 @@ class MeshContext:
         if cls._mesh is not None:
             return cls._mesh
         else:
-            raise MeshContextError("not found mesh in context")
+            raise MeshContextError("not found any mesh in Context")
 
     @classmethod
     def update_mesh(cls, mesh):
@@ -52,21 +53,21 @@ class MeshContext:
         cls._observer = set()
 
     @classmethod
-    def add_follower(cls, follower):
-        if hasattr(follower, "update_mesh"):
-            cls._observer.add(follower)
+    def add_observer(cls, observer):
+        if hasattr(observer, "update_mesh"):
+            cls._observer.append(observer)
         else:
-            raise ValueError("observer should have update_mesh(). ")
+            raise ValueError("observer should have the update_mesh(). ")
 
     @classmethod
-    def remove_follower(cls, observer):
+    def remove_observer(cls, observer):
         if observer in cls._observer:
-            cls._observer.discard(observer)
+            cls._observer.remove(observer)
         else:
-            raise ValueError("{} is not observer of MeshContext. ".format(observer))
+            raise ValueError("{} is not a observer of MeshContext. ".format(observer))
 
     @classmethod
-    def is_follower(cls, item):
+    def is_observer(cls, item):
         return item in cls._observer
 
     @classmethod
@@ -141,4 +142,4 @@ if __name__ == "__main__":
     try:
         MeshContext.get_mesh()
     except MeshContextError as e:
-        assert e.args[0] == "not found mesh in context"
+        assert e.args[0] == "not found any mesh in Context"

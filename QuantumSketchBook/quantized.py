@@ -6,11 +6,12 @@ class Quantized:
         if mesh is not None:
             self.mesh = mesh
         else:
-            MeshContext.add_follower(self)
             self.mesh = MeshContext.get_mesh()
+            MeshContext.add_observer(self)
 
     def update_mesh(self):
         self.mesh = MeshContext.get_mesh()
+
 
 if __name__ == "__main__":
     mod = __import__("QuantumSketchBook.mesh")

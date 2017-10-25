@@ -14,10 +14,10 @@ class Schroedinger:
         self.ode.set_integrator('zvode', nsteps=1000000)
         self.ode.set_initial_value(self.x0state.vector)
 
-    def equation(self, t, phi0):
+    def equation(self, t, phi0):  # noqa
         return self._operator.dot(phi0)
 
-    def generator(self):
+    def __iter__(self):
         yield self.x0state.vector
         index = 1
         print("now solving", end=" ")
@@ -29,7 +29,7 @@ class Schroedinger:
 
     def solution(self):
         sol = zeros([self.mesh.t_num, self.mesh.x_num], dtype=complex)
-        for i, s in enumerate(self.generator()):
+        for i, s in enumerate(self):
             sol[i] = s
         while True:
             yield sol

@@ -10,7 +10,6 @@ class Laplasian:
         self.x_num = mesh.x_num
 
     def _core_matrix(self) -> csr_matrix:
-        # noinspection PyTypeChecker
         det = 1 / (360 * self.dx ** 2)
         coeff = array([[4], [-54], [540], [-980], [540], [-54], [4]])
         std = det * coeff
@@ -67,4 +66,3 @@ class Laplasian:
             dia = dia_matrix((data, pad), shape=(self.x_num, self.x_num), dtype=complex)
             csr = dia.tocsr()
             return csr
-
