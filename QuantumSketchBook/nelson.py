@@ -5,11 +5,11 @@ from scipy import imag, real, log, sqrt, random, zeros
 from scipy.interpolate import RectBivariateSpline
 
 
-class Nelson(Quantized):
+class Nelson:
     def __init__(self, schroedinger: Schroedinger, n: int, micro_steps=10):
         self.mesh = schroedinger.mesh
-        if MeshContext.is_follower(schroedinger):
-            MeshContext.add_follower(self)
+        if MeshContext.is_observer(schroedinger):
+            MeshContext.add_observer(self)
         psi = schroedinger.solution()
         imz, rez = imag(log(psi)), real(log(psi))
         self.realSpline = RectBivariateSpline(self.mesh.t_vector, self.mesh.x_vector, rez)

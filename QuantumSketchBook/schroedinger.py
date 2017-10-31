@@ -9,6 +9,7 @@ class Schroedinger:
         self.mesh = hamiltonian.mesh
         self._operator = -1j * hamiltonian.matrix
         self.x0state = x0state
+        self._sol = None
 
         self.ode = ode(self.equation)
         self.ode.set_integrator('zvode', nsteps=1000000)
@@ -28,8 +29,8 @@ class Schroedinger:
             index += 1
 
     def solution(self):
-        sol = zeros([self.mesh.t_num, self.mesh.x_num], dtype=complex)
-        for i, s in enumerate(self):
-            sol[i] = s
-        while True:
-            yield sol
+        if self._sol is None:
+            self._sol = zeros([self.mesh.t_num, self.mesh.x_num], dtype=complex)
+            for i, s in enumerate(self):
+                self._sol[i] = s
+        return self._sol

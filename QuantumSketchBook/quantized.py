@@ -1,7 +1,8 @@
 from QuantumSketchBook.context import MeshContext
+import QuantumSketchBook.meta as meta
 
 
-class Quantized:
+class Quantized(meta.Quantized):
     def __init__(self, mesh=None):
         if mesh is not None:
             self.mesh = mesh
