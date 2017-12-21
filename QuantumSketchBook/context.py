@@ -50,7 +50,7 @@ class MeshContext:
         cls._has_mesh = False
         cls._mesh = None
         cls._context = None
-        cls._observer = set()
+        cls._observer = list()
 
     @classmethod
     def add_observer(cls, observer):
@@ -84,7 +84,7 @@ class Context:
     def __init__(self, x_min, x_max, dx, t_min, t_max, dt):
         self.mesh = Mesh(x_min, x_max, dx, t_min, t_max, dt)
         self._pre_mesh = None
-        self._pre_observer = set()
+        self._pre_observer = list()
 
     def __enter__(self):
         if MeshContext.has_instance():
