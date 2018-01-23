@@ -21,8 +21,8 @@ class State(Field):
         random_index = array(target)[target_index]
         return self.mesh.x_vector[random_index]
 
-    def __plot__(self, show, save, title, *args, **kwargs):
-        super().__plot__(show, save, title, "probability", absolute(self.vector) ** 2)
+    def __plot__(self, title, *args, **kwargs):
+        super().__plot__(title, "probability", absolute(self.vector) ** 2)
 
 
 def gaussian_state(mean, sd, wave_number):

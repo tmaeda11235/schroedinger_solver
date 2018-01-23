@@ -36,8 +36,8 @@ class Potential(Field):
     def __eq__(self, other):
         return self.mesh == other.mesh and self.vector == other.vector
 
-    def __plot__(self, show, save, title, *args, **kwargs):
-        return super().__plot__(show, save, title, "V", self.vector)
+    def __plot__(self, title, *args, **kwargs):
+        return super().__plot__(title, "V", self.vector)
 
 
 def potential(arg):

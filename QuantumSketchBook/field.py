@@ -20,7 +20,7 @@ class Field(Quantized):
         else:
             raise TypeError("the first argument should be iterable or callable")
 
-    def __plot__(self, show, save, title, ylabel, values, *args, **kwargs):
+    def __plot__(self, title, ylabel, values, *args, **kwargs):
         fig = figure()
         ax = axes()
         ax.plot(self.mesh.x_vector, values)
@@ -28,12 +28,6 @@ class Field(Quantized):
         ax.set_xlabel("x")
         ax.set_ylabel(ylabel)
         fig.add_axes(ax)
-
-        if save:
-            fig.savefig(title + ".png")
-
-        if show:
-            fig.show()
         return fig
 
 

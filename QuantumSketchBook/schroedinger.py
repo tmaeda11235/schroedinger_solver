@@ -41,7 +41,7 @@ class Schroedinger:
     def nelson(self, n: int, micro_steps=10):
         return Nelson(self, n, micro_steps)
 
-    def __plot__(self, show=True, save=False, title="no_title", max_pix=(1000, 1000), limit=()):
+    def __plot__(self, max_pix=(1000, 1000), limit=(), *args, **kwargs):
         x_step = int(self.mesh.x_num / max_pix[0]) + 1
         t_step = int(self.mesh.x_num / max_pix[1]) + 1
         x_grid, t_grid = meshgrid(self.mesh.x_vector[::x_step], self.mesh.t_vector[::t_step])
@@ -64,11 +64,5 @@ class Schroedinger:
         if limit is not ():
             above.set_xlim(*limit)
             under.set_xlim(*limit)
-
-        if save:
-            fig.savefig(title + ".png")
-
-        if show:
-            fig.show()
         return fig
 
