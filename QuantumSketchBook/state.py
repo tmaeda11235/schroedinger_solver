@@ -22,7 +22,7 @@ class State(Field):
         return self.mesh.x_vector[random_index]
 
     def __plot__(self, title, *args, **kwargs):
-        super().__plot__(title, "probability", absolute(self.vector) ** 2)
+        return super().__plot__(title, "probability", absolute(self.vector) ** 2)
 
 
 def gaussian_state(mean, sd, wave_number):

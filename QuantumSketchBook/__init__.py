@@ -5,11 +5,10 @@ from QuantumSketchBook.hamiltonian import Hamiltonian  # noqa
 from QuantumSketchBook.schroedinger import Schroedinger  # noqa
 
 
-def plot(plotted, show=True, save=False, title="no_title", *args, **kwargs):
+def plot(plotted, title="no_title", show=True, save=False, *args, **kwargs):
     fig = plotted.__plot__(title, *args, **kwargs)
     if save:
         fig.savefig(title + ".png")
-
     if show:
         fig.show()
     return fig
