@@ -1,16 +1,20 @@
 from QuantumSketchBook.context import MeshContext
+from typing import Optional, TYPE_CHECKING
+if TYPE_CHECKING:
+    from QuantumSketchBook import Mesh
 
 
 class Quantized:
-    def __init__(self, mesh=None):
+    def __init__(self, mesh: Optional["Mesh"]=None):
         if mesh is not None:
-            self.mesh = mesh
+            self.mesh: Mesh = mesh
         else:
-            MeshContext.add_follower(self)
-            self.mesh = MeshContext.get_mesh()
+            self.mesh: Mesh = MeshContext.get_mesh()
+            MeshContext.add_observer(self)
 
     def update_mesh(self):
         self.mesh = MeshContext.get_mesh()
+
 
 if __name__ == "__main__":
     mod = __import__("QuantumSketchBook.mesh")

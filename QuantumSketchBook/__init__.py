@@ -1,9 +1,15 @@
-from QuantumSketchBook.mesh import Mesh, my_mesh  # noqa
-from QuantumSketchBook.context import MeshContext # noqa
-from QuantumSketchBook.laplasian import Laplasian  # noqa
-from QuantumSketchBook.state import State, gaussian_state# noqa
-from QuantumSketchBook.potential import potential, free,  box, kp, step, vacuum_kp, kp_vacuum  # noqa
-from QuantumSketchBook.schroedinger import Schroedinger  # noqa
-from QuantumSketchBook.nelson import Nelson  # noqa
-from QuantumSketchBook.note import Note  # noqa
+from QuantumSketchBook.context import Context  # noqa
+from QuantumSketchBook.state import State, gaussian_state  # noqa
+from QuantumSketchBook.potential import Potential, potential, free,  box, kp, step, vacuum_kp, kp_vacuum  # noqa
 from QuantumSketchBook.hamiltonian import Hamiltonian  # noqa
+from QuantumSketchBook.schroedinger import Schroedinger  # noqa
+
+
+def plot(plotted, show=True, save=False, title="no_title", *args, **kwargs):
+    fig = plotted.__plot__(title, *args, **kwargs)
+    if save:
+        fig.savefig(title + ".png")
+
+    if show:
+        fig.show()
+    return fig

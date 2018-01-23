@@ -19,13 +19,13 @@ class Potential(Field):
 
     def __add__(self, other):
         if not self.mesh == other.mesh:
-            raise ValueError("DIFFERENT MESH !")
-        return Potential(self.mesh, self.vector + other.vector)
+            raise ValueError("meshes on {} and {} are not the same. ")
+        return Potential(self.vector + other.vector, mesh=self.mesh)
 
     def __mul__(self, other):
         if not isinstance(other, Real):
             raise TypeError("unsupported operand type(s) for *:'Potential' and '{}'".format(type(other)))
-        return Potential(self.mesh, other * self.vector)
+        return Potential(other * self.vector, mesh=self.mesh)
 
     def __sub__(self, other):
         return self.__add__(other.__mul__(-1))
@@ -34,12 +34,14 @@ class Potential(Field):
         return self.__mul__(other)
 
     def __eq__(self, other):
-        return self.mesh == other.mesh and self.vector() == other.vector
+        return self.mesh == other.mesh and self.vector == other.vector
+
+    def __plot__(self, title, *args, **kwargs):
+        return super().__plot__(title, "V", self.vector)
 
 
 def potential(arg):
-    mesh = MeshContext.get_mesh()
-    return Potential(mesh, arg)
+    return Potential(arg)
 
 
 def free():
@@ -54,7 +56,7 @@ def step(height: Real, distance: Real):
 
 
 def box(height: Real, distance: Real, barrier: Real):
-    if not barrier > 0:
+    if 0 >= barrier:
         raise ValueError("barrier should be positive. ")
     near = step(height, distance)
     far = step(height, distance + barrier)
@@ -82,7 +84,17 @@ def kp(height, well, barrier):
     v2 = kp_vacuum(height, well, barrier)
     return v1 + v2
 
+
 if __name__ == "__main__":
-    a = step(3, 1)
-    b = step(2, 2)
-    kp(1, 1, 1)
+    import QuantumSketchBook as QSB
+    with QSB.Context(0, 10, 1, 0, 10, 1) as mesh:
+        test1 = step(3, 1).vector
+        test2 = step(2, 2).vector
+        test3 = vacuum_kp(1, 1, 1).vector
+        assert all(a == 0 for i, a in enumerate(test1) if i < 1)
+        assert all(a == 3 for i, a in enumerate(test1) if i >= 1)
+        assert all(b == 0 for i, b in enumerate(test2) if i < 2)
+        assert all(b == 2 for i, b in enumerate(test2) if i >= 2)
+        assert all(c == 0 for i, c in enumerate(test3) if i % 2 == 1)
+        assert all(c == 1 for i, c in enumerate(test3) if i % 2 == 0)
+        QSB.plot(step(3, 1), False, True)

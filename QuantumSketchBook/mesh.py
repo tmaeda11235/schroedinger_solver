@@ -1,19 +1,20 @@
 from scipy import arange
 from numbers import Real
-from collections import namedtuple
+import QuantumSketchBook.meta as meta
 
 
-class Mesh(namedtuple("_Mesh", "x_min, x_max, dx, t_min, t_max, dt")):
+class Mesh(meta.Mesh):
 
-    def __new__(cls, x_min, x_max, dx, t_min, t_max, dt):
+    def __new__(cls, x_min: Real, x_max: Real, dx: Real,
+                t_min: Real, t_max: Real, dt: Real)-> "Mesh":
         if not all(isinstance(x, Real) for x in (x_min, x_max, dx, t_min, t_max, dt)):
             raise TypeError("input should be a number")
         if not (x_min < x_max and t_min < t_max):
             raise ValueError("The min should be smaller than The max. ")
-        if not (0 < dx or 0 < dt):
+        if dx <= 0 or dt <= 0:
             raise ValueError("The dx and dt should be positive. ")
         if not (x_max - x_min > dx and t_max - t_min > dt):
-            raise ValueError("too big to make mesh. ")
+            raise ValueError("too big dx or dt to make mesh. ")
         return super().__new__(cls, x_min, x_max, dx, t_min, t_max, dt)
 
     @property
@@ -36,10 +37,6 @@ class Mesh(namedtuple("_Mesh", "x_min, x_max, dx, t_min, t_max, dt")):
     def t_num(self):
         return len(self.t_vector)
 
-    @property
-    def dense(self):
-        return self.dx ** -1, self.dt ** -1
-
     def __str__(self):
         x_string = "{}<x<{}  (dx={})".format(self.x_min, self.x_max, self.dt)
         t_string = "{}<t<{}  (dt={})".format(self.t_min, self.t_max, self.dx)
@@ -52,5 +49,8 @@ class Mesh(namedtuple("_Mesh", "x_min, x_max, dx, t_min, t_max, dt")):
 def my_mesh(x_min=-10, x_max=10, dx=0.1, t_min=0, t_max=10, dt=0.1):
     return Mesh(x_min, x_max, dx, t_min, t_max, dt)
 
+
 if __name__ == "__main__":
-    print(my_mesh())
+    test1 = my_mesh()
+    assert test1.x_num == 200
+    assert test1.t_num == 100
