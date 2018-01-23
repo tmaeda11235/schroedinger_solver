@@ -1,15 +1,13 @@
-from QuantumSketchBook.schroedinger import Schroedinger
-from QuantumSketchBook.quantized import Quantized
-from QuantumSketchBook.context import MeshContext
+from typing import TYPE_CHECKING
 from scipy import imag, real, log, sqrt, random, zeros
 from scipy.interpolate import RectBivariateSpline
+if TYPE_CHECKING:
+    from QuantumSketchBook.schroedinger import Schroedinger
 
 
 class Nelson:
-    def __init__(self, schroedinger: Schroedinger, n: int, micro_steps=10):
+    def __init__(self, schroedinger: "Schroedinger", n: int, micro_steps=10):
         self.mesh = schroedinger.mesh
-        if MeshContext.is_observer(schroedinger):
-            MeshContext.add_observer(self)
         psi = schroedinger.solution()
         imz, rez = imag(log(psi)), real(log(psi))
         self.realSpline = RectBivariateSpline(self.mesh.t_vector, self.mesh.x_vector, rez)
@@ -39,8 +37,9 @@ class Nelson:
         locus_array = zeros((self.n, self.mesh.t_num))
         locus_array[:, 0] = self.x
         for i in range(1, self.mesh.t_num):
-            print("\rNelson {}% done ! now".format(int(100 * i / self.mesh.t_num)), end=" ", flush=True)
+            print("\rNelson have solved {:.2%}!".format(i / self.mesh.t_num), end=" ", flush=True)
             for j in range(self.micro_steps-1):
                 self.run()
             locus_array[:, i] = self.run()
+        print("\rNelson have solved 100.00%!", flush=True)
         return locus_array

@@ -6,7 +6,7 @@ import QuantumSketchBook.meta as meta
 class Mesh(meta.Mesh):
 
     def __new__(cls, x_min: Real, x_max: Real, dx: Real,
-                t_min: Real, t_max: Real, dt: Real)-> meta.Mesh:
+                t_min: Real, t_max: Real, dt: Real)-> "Mesh":
         if not all(isinstance(x, Real) for x in (x_min, x_max, dx, t_min, t_max, dt)):
             raise TypeError("input should be a number")
         if not (x_min < x_max and t_min < t_max):

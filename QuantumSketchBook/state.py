@@ -7,7 +7,7 @@ from scipy import array, exp, absolute, ones, random
 class State(Field):
 
     def random_values(self, n):
-        probability = absolute(self.vector()) ** 2
+        probability = absolute(self.vector) ** 2
         probability = probability * 10000  # 有効数字を3ケタ以上取るために10000倍する
         probability_naturalized = probability.astype(int)
         target = []
@@ -21,10 +21,8 @@ class State(Field):
         random_index = array(target)[target_index]
         return self.mesh.x_vector[random_index]
 
-
-def state(arg):
-    mesh = MeshContext.get_mesh()
-    return State(mesh, arg)
+    def __plot__(self, show, save, title, *args, **kwargs):
+        super().__plot__(show, save, title, "probability", absolute(self.vector) ** 2)
 
 
 def gaussian_state(mean, sd, wave_number):
@@ -40,3 +38,4 @@ if __name__ == "__main__":
         test1 = absolute(gaussian_state(5, 1, 0).vector)
         assert max(test1) == test1[5]
         assert test1[4] == test1[6]
+        QSB.plot(gaussian_state(0, 3, 1), False, True)

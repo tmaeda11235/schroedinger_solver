@@ -22,6 +22,7 @@ class Laplasian:
     def matrix(self, boundary="free") -> csr_matrix:
         det = 1 / (360 * self.dx ** 2)
         csr = self._core_matrix()
+
         if boundary == "free":
             data = csr.data
             bound = array([-980, 1080, -108, 8, 540, -1034, 544, -54, 4, -54, 544]) * det
@@ -29,6 +30,7 @@ class Laplasian:
             data[-11:] = bound[::-1]
             matrix = csr_matrix((data, csr.indices, csr.indptr), dtype=complex)
             return matrix
+
         elif boundary == "fix":
             data = csr.data
             bound = array([-980, 0, 0, 0, 540, -926, 536, -54, 4, -54, 536]) * det
@@ -36,6 +38,7 @@ class Laplasian:
             data[-11:] = bound[::-1]
             matrix = csr_matrix((data, csr.indices, csr.indptr), dtype=complex)
             return matrix
+
         elif boundary == "period":
             n = self.x_num
             data = array([4, -54, 540,  4, -54,  4,  4, -54,  4, 540, -54,  4]) * det
@@ -45,6 +48,7 @@ class Laplasian:
             bound = coo.tocsr()
             matrix = csr + bound
             return matrix
+
         elif boundary == "absorb":
             data = csr.data
             bound = array([-980, 1080, -108, 8, 540, -1034, 544, -54, 4, -54, 544]) * det
@@ -57,6 +61,7 @@ class Laplasian:
             data.transpose()
             dia = dia_matrix((data2, zeros(1)), shape=(self.x_num, self.x_num)).tocsr()
             return free + dia
+
         elif boundary == "poor":
             det = 1 / (self.dx ** 2)
             coeff = array([[1], [-2], [1]])

@@ -1,4 +1,4 @@
-from typing import Any, Generic, Iterable, Union, NamedTuple, Sequence, Callable, Iterator
+from typing import Any, Iterable, Union, NamedTuple, Sequence, Callable, Iterator
 from numbers import Real, Number
 from abc import abstractmethod
 from scipy.sparse import csr_matrix
@@ -21,22 +21,18 @@ class Mesh(NamedTuple):
     t_max: T_Max
     dt: Dt
 
-    @property
     @abstractmethod
     def x_vector(self) -> NDArray:
         pass
 
-    @property
     @abstractmethod
     def t_vector(self) -> NDArray:
         pass
 
-    @property
     @abstractmethod
     def x_num(self) -> int:
         return len(self.x_vector)
 
-    @property
     @abstractmethod
     def t_num(self) -> int:
         return len(self.x_vector)
@@ -46,7 +42,7 @@ class Mesh(NamedTuple):
         pass
 
 
-class Context(Generic[X_Min, X_Max, Dx, T_Min, T_Max, Dt]):
+class Context:
 
     @abstractmethod
     def __new__(cls, x_min: X_Min, x_max: X_Max, dx: Dx,
@@ -62,21 +58,20 @@ class Context(Generic[X_Min, X_Max, Dx, T_Min, T_Max, Dt]):
         pass
 
 
-class Quantized(Generic[Any, Mesh]):
+class Quantized:
 
     @abstractmethod
     def update_mesh(self) -> None:
         pass
 
 
-class Field(Quantized[Union[NDArray, Callable], Mesh]):
+class Field:
 
     @abstractmethod
     def __init__(self, arg: Union[NDArray, Callable], mesh: Mesh) -> None:
         pass
 
     @abstractmethod
-    @property
     def vector(self) -> NDArray:
         pass
 
@@ -105,16 +100,3 @@ class Solver(Iterable[NDArray]):
     def __iter__(self) -> NDArray:
         pass
 
-
-Hamiltonian = Quantized[Potential, Mesh]
-
-
-class Dynamic(Iterable[Field]):
-
-    @abstractmethod
-    def __init__(self, args: Union[Callable, Iterable[Iterable]]):
-        pass
-
-    @abstractmethod
-    def __iter__(self):
-        pass

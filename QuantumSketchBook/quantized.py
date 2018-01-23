@@ -1,13 +1,15 @@
 from QuantumSketchBook.context import MeshContext
-import QuantumSketchBook.meta as meta
+from typing import Optional, TYPE_CHECKING
+if TYPE_CHECKING:
+    from QuantumSketchBook import Mesh
 
 
-class Quantized(meta.Quantized):
-    def __init__(self, mesh=None):
+class Quantized:
+    def __init__(self, mesh: Optional["Mesh"]=None):
         if mesh is not None:
-            self.mesh = mesh
+            self.mesh: Mesh = mesh
         else:
-            self.mesh = MeshContext.get_mesh()
+            self.mesh: Mesh = MeshContext.get_mesh()
             MeshContext.add_observer(self)
 
     def update_mesh(self):

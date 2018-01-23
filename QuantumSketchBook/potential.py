@@ -36,6 +36,9 @@ class Potential(Field):
     def __eq__(self, other):
         return self.mesh == other.mesh and self.vector == other.vector
 
+    def __plot__(self, show, save, title, *args, **kwargs):
+        return super().__plot__(show, save, title, "V", self.vector)
+
 
 def potential(arg):
     return Potential(arg)
@@ -94,3 +97,4 @@ if __name__ == "__main__":
         assert all(b == 2 for i, b in enumerate(test2) if i >= 2)
         assert all(c == 0 for i, c in enumerate(test3) if i % 2 == 1)
         assert all(c == 1 for i, c in enumerate(test3) if i % 2 == 0)
+        QSB.plot(step(3, 1), False, True)
