@@ -1,45 +1,44 @@
 from typing import TYPE_CHECKING
 from scipy import imag, real, log, sqrt, random, zeros
-from scipy.interpolate import RectBivariateSpline
+from scipy.interpolate import CubicSpline
 if TYPE_CHECKING:
     from QuantumSketchBook.schroedinger import Schroedinger
 
 
 class Nelson:
     def __init__(self, schroedinger: "Schroedinger", n: int, micro_steps=10):
+        self.schroedinger = schroedinger
         self.mesh = schroedinger.mesh
-        psi = schroedinger.solution()
-        imz, rez = imag(log(psi)), real(log(psi))
-        self.realSpline = RectBivariateSpline(self.mesh.t_vector, self.mesh.x_vector, rez)
-        self.imagSpline = RectBivariateSpline(self.mesh.t_vector, self.mesh.x_vector, imz)
         self.x = schroedinger.x0state.random_values(n)
-        self.t = self.mesh.t_min
         self.n = n
-        self.t_micro = self.mesh.dt / micro_steps
+        self.t_micro = self.schroedinger.mesh.dt / micro_steps
         self.micro_steps = micro_steps
 
-    def drift(self, x, t):
-        re = self.realSpline.ev(t, x, dy=1)
-        im = self.imagSpline.ev(t, x, dy=1)
-        return re + im
+    def derivative_fo_part(self, part, sch):
+        log_part = part(log(sch))
+        spline = CubicSpline(self.mesh.x_vector, log_part)
+        return spline(self.x, 1)
 
-    def run(self):
-        rand = sqrt(0.5) * random.normal(scale=sqrt(self.t_micro), size=self.n)
-        self.x += self.drift(self.x, self.t) * self.t_micro + rand
-        self.t += self.t_micro
+    def run(self, drift):
+        for _ in range(self.micro_steps):
+            rand = sqrt(0.5) * random.normal(scale=sqrt(self.t_micro), size=self.n)
+            self.x += drift(self.x) * self.t_micro + rand
         return self.x
-
-    def set_t(self, new_t):
-        self.t = new_t
-        return self
 
     def locus(self):
         locus_array = zeros((self.n, self.mesh.t_num))
         locus_array[:, 0] = self.x
         for i in range(1, self.mesh.t_num):
-            print("\rNelson have solved {:.2%}!".format(i / self.mesh.t_num), end=" ", flush=True)
             for j in range(self.micro_steps-1):
                 self.run()
             locus_array[:, i] = self.run()
         print("\rNelson have solved 100.00%!", flush=True)
         return locus_array
+
+    def __iter__(self):
+        self.x = self.schroedinger.x0state.random_values(self.n)
+        yield self.x
+        for i, sch in enumerate(self.schroedinger):
+            drift = self.derivative_fo_part(real, sch) + self.derivative_fo_part(imag, sch)
+            yield self.run(drift)
+            print(f"\rNelson have solved {(i + 1) / self.mesh.t_num:.2%}!", end=" ", flush=True)
